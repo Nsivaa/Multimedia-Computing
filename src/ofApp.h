@@ -24,11 +24,16 @@ public:
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
 
+	void setMargin(int margin);
+	void setImageIndex(int index);
+
 	// we will have a dynamic number of images, based on the content of a directory:
 	ofDirectory dir;
 	vector<ofImage> images;
 
-	int currentImage;
 
+private:
+	int currentImageIndex;
+	int margin = 20;
 };
 

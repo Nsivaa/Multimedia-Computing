@@ -15,9 +15,9 @@ void ofApp::setup() {
 	for (int i = 0; i < (int)dir.size(); i++) {
 		images[i].load(dir.getPath(i));
 	}
-	currentImage = 0;
+	currentImageIndex = 0;
 
-	ofBackground(ofColor::white);
+	ofBackground(ofColor::black);
 }
 
 //--------------------------------------------------------------
@@ -30,34 +30,28 @@ void ofApp::draw() {
 
 	if (dir.size() > 0) {
 		ofSetColor(ofColor::white);
-		images[currentImage].draw(300, 50);
+		int x_pos = margin, y_pos = margin;
 
-		ofSetColor(ofColor::gray);
-		string pathInfo = dir.getName(currentImage) + " " + dir.getPath(currentImage) + "\n\n" +
-			"press any key to advance current image\n\n" +
-			"many thanks to hikaru furuhashi for the OFs";
-		ofDrawBitmapString(pathInfo, 300, images[currentImage].getHeight() + 80);
-	}
-
-	ofSetColor(ofColor::gray);
-	for (int i = 0; i < (int)dir.size(); i++) {
-		if (i == currentImage) {
-			ofSetColor(ofColor::red);
+		// draw all images one next to another with a small margin
+		for (int i = 0; i < images.size(); i++) {
+			images[i].draw(x_pos, y_pos);
+			x_pos += images[i].getWidth() + margin;
+			if (x_pos > ofGetWidth() - images[i].getWidth()) {
+				x_pos = margin;
+				y_pos += images[i].getHeight() + margin;
+			}
 		}
-		else {
-			ofSetColor(ofColor::black);
-		}
-		string fileInfo = "file " + ofToString(i + 1) + " = " + dir.getName(i);
-		ofDrawBitmapString(fileInfo, 50, i * 20 + 50);
+		
 	}
+	
 
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
 	if (dir.size() > 0) {
-		currentImage++;
-		currentImage %= dir.size();
+		currentImageIndex++;
+		currentImageIndex %= dir.size();
 	}
 }
 
@@ -109,4 +103,12 @@ void ofApp::gotMessage(ofMessage msg) {
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo) {
 
+}
+
+void ofApp::setMargin(int margin) {
+	this->margin = margin;
+}
+
+void ofApp::setImageIndex(int index) {
+	this->currentImageIndex = index;
 }
