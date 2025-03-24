@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "MediaElement.h"
 
 class ofApp : public ofBaseApp {
 
@@ -27,13 +28,11 @@ public:
 	void setMargin(int margin);
 	void setImageIndex(int index);
 
-	// we will have a dynamic number of images, based on the content of a directory:
 	ofDirectory dir;
-	vector<ofImage> images;
+	vector<MediaElement> medias;
 
-
-private:
-	int currentImageIndex;
+	int currentMedia = 0;
 	int margin = 20;
-};
+	};
+
 

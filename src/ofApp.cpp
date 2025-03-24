@@ -2,24 +2,34 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	dir.listDir("images/of_logos/");
-	dir.allowExt("jpg");
-	dir.sort(); // in linux the file system doesn't return file lists ordered in alphabetical order
+    dir.listDir("images/of_logos/"); // Media directory
+    dir.allowExt("jpg");
+    dir.allowExt("mp4");
 
-	//allocate the vector to have as many ofImages as files
-	if (dir.size()) {
-		images.assign(dir.size(), ofImage());
-	}
 
-	// you can now iterate through the files and load them into the ofImage vector
-	for (int i = 0; i < (int)dir.size(); i++) {
-		images[i].load(dir.getPath(i));
-	}
-	currentImageIndex = 0;
+    // Iterate through the files and load them appropriately
+	// TODO: substitute images with a class: img + optional pointer to video. If video is not null, then it is a video.
+	// when we draw we draw the image and if the video is not null we draw the video thumbnail 
 
-	ofBackground(ofColor::black);
+    for (int i = 0; i < dir.size(); i++) {
+        string filePath = dir.getPath(i);
+        string extension = ofToLower(ofFilePath::getFileExt(filePath));
+
+        if (extension == "jpg") {
+            ofImage img;
+            img.load(filePath);
+            medias.push_back(MediaElement(img));
+        }
+        else if (extension == "mp4") {
+
+            medias.push_back(MediaElement(filePath));
+        }
+    }
+
+    currentMedia = 0;
+
+    ofBackground(ofColor::white);
 }
-
 //--------------------------------------------------------------
 void ofApp::update() {
 
@@ -33,15 +43,14 @@ void ofApp::draw() {
 		int x_pos = margin, y_pos = margin;
 
 		// draw all images one next to another with a small margin
-		for (int i = 0; i < images.size(); i++) {
-			images[i].draw(x_pos, y_pos);
-			x_pos += images[i].getWidth() + margin;
-			if (x_pos > ofGetWidth() - images[i].getWidth()) {
-				x_pos = margin;
-				y_pos += images[i].getHeight() + margin;
-			}
-		}
-		
+        for (int i = 0; i < medias.size(); i++) {
+            medias[i].image.draw(x_pos, y_pos);
+            x_pos += medias[i].image.getWidth() + margin;
+            if (x_pos > ofGetWidth() - medias[i].image.getWidth()) {
+                x_pos = margin;
+                y_pos += medias[i].image.getHeight() + margin;
+            }
+        }
 	}
 	
 
@@ -49,10 +58,7 @@ void ofApp::draw() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-	if (dir.size() > 0) {
-		currentImageIndex++;
-		currentImageIndex %= dir.size();
-	}
+
 }
 
 //--------------------------------------------------------------
@@ -110,5 +116,4 @@ void ofApp::setMargin(int margin) {
 }
 
 void ofApp::setImageIndex(int index) {
-	this->currentImageIndex = index;
 }
