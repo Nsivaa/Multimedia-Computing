@@ -6,19 +6,15 @@ bool MediaElement::isVideo() const {
 
 void MediaElement::generateThumbnail() {
     try {
-        if (this->isVideo()) {
 
+        if (this->isVideo()) {
             ofVideoPlayer tempVideo;
             tempVideo.load(this->videoPath);
-            tempVideo.update(); // Update to make sure frame is loaded
-
-            for (int i = 0; i < 10; i++) {
-                tempVideo.update();
-                ofSleepMillis(10); // Small delay to allow decoding
-            }
+            tempVideo.update(); 
+            ofSleepMillis(30); // Small delay to allow decoding. Garbage but otherwise won't work
+            tempVideo.update();
 
             if (tempVideo.isLoaded() && tempVideo.getPixels().isAllocated()) {
-                this->image.allocate(tempVideo.getWidth(), tempVideo.getHeight(), OF_IMAGE_COLOR);
                 this->image.setFromPixels(tempVideo.getPixels());
                 this->image.resize(300, 300); // Resize to image size
 
