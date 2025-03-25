@@ -1,6 +1,5 @@
 #pragma once
 #include "ofMain.h"
-#include "ofApp.h"
 
 
 class MediaElement {
@@ -10,16 +9,17 @@ class MediaElement {
 
 
 public:
+	MediaElement() {};
 	MediaElement(ofImage img) : image(img) {};
 	MediaElement(string path) : videoPath(path) { generateThumbnail(); };
 
 	void generateThumbnail();
-	bool hasVideo() const;
+	bool isVideo() const;
 
 	ofImage image;
 	string videoPath = "";
 	// string xml_data;
 
-	
+
 };
 

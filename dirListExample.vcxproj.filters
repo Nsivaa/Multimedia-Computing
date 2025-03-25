@@ -37,9 +37,7 @@
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="MediaElement.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
+    <ClCompile Include="src\MediaElement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -95,9 +93,7 @@
     <ClInclude Include="..\..\..\addons\ofxGui\src\ofxToggle.h">
       <Filter>addons\ofxGui\src</Filter>
     </ClInclude>
-    <ClInclude Include="MediaElement.h">
-      <Filter>src</Filter>
-    </ClInclude>
+    <ClInclude Include="src\MediaElement.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />

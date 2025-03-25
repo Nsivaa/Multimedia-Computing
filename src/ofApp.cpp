@@ -25,10 +25,10 @@ void ofApp::setup() {
             medias.push_back(MediaElement(filePath));
         }
     }
-
+    
     currentMedia = 0;
 
-    ofBackground(ofColor::white);
+    ofBackground(ofColor::black);
 }
 //--------------------------------------------------------------
 void ofApp::update() {

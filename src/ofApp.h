@@ -1,9 +1,5 @@
-/* Refer to the README.md in the example's root folder for more information on usage */
-
-#pragma once
-
 #include "ofMain.h"
-#include "MediaElement.h"
+#include "MediaElement.h" 
 
 class ofApp : public ofBaseApp {
 
@@ -29,10 +25,8 @@ public:
 	void setImageIndex(int index);
 
 	ofDirectory dir;
-	vector<MediaElement> medias;
+	std::vector<MediaElement> medias;
 
 	int currentMedia = 0;
 	int margin = 20;
-	};
-
-
+};
