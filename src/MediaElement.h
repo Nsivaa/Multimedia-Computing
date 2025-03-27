@@ -5,7 +5,7 @@
 class MediaElement {
 	// The MediaElement class is used to handle both videos and images in the gallery. 
 	// The "image" field will contain the thumbnail of the video if the element is a video, 
-	// otherwise the image itself (and the pointer to the video will be null). 
+	// otherwise the image itself (and the path  to the video will be null). 
 
 
 public:
