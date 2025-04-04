@@ -1,0 +1,87 @@
+MULTIMEDIA COMPUTING CLASS DIAGRAM
+
+ofApp {
+	// all user input methods concerning clicks, key presses etc
+
+	// all standard methods as draw(), update(), setup()
+
+
+	Gallery gallery;
+}
+
+Gallery {
+
+	displayOverlay(string overlayType);
+	groupByFeature(string groupFeature);
+	sortByFeature(string sortFeature);
+
+	// methods for comparing couples of elements, one per feature. might return some sort of difference measurement. 
+	compareElementsFeature1(MediaElement media1, MediaElement media2);
+	...
+
+	MediaElement medias[];
+	enum overlayTypes, groupFeatures, sortFeatures;
+
+	//some GUI elements displaying tick boxes for selected groupings, overlay etc 
+	// should they be in a separate class? need to study ofxGui library.
+	<TickBox> group_boxes; 
+	dict<TickBox> sort_boxes;
+	dict<TickBox> overlay_boxes;
+
+	// elements to navigate the gallery, play and pause videos
+	RightNavigationArrow rightArrow;
+	LeftNavigationArrow leftArrow;
+	PlayButton playButton;
+	StopButton stopButton;
+	FullScreenButton fullScreenButton;
+
+
+	camera Camera; 
+}
+
+
+MediaElement: represents either an image or a video {
+	void generateThumbnail();
+	bool isVideo() const;
+
+	ofImage image;
+	ofImage overlays[]; // overlays to display on top of the image
+	string videoPath = "";
+	string xmlPath = "";
+	// metadata: we define all needed attributes and save/load them with the ofxXml methods when needed.
+	// the xml structure has general image metadata and then a list nested structure consisting of the pixel metadata.
+	// consider defining a different class if they're too many 
+}
+
+Camera: all camera-related stuff as motion detection, gestures etc {
+	
+	bool isMotionDetected(float threshold) {
+		// professor said can be done by comparing image values for subsequent frames.
+		// We probably need a threshold on this difference as it will probably never be 0. 
+		// By the way this method only returns if a motion has been detected, not what type
+
+		// Dummy code:
+		ofImage imgPrev = getCameraFrame(); // get first frame
+		ofImage imgCurr = getCameraFrame(); // get second frame, maybe needs an update cycle or something
+		imgDiff = absDiff(imgPrev, imgCurr);
+		if imgDiff > threshold {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	string detectGesture() {
+		while isMotionDetected(){
+		// record frames from the camera and perform gesture detection
+		...
+		}
+
+	}
+
+	// gesture stuff, no idea how to model or what to represent about a gesture
+	enum gestureTypes;
+	...
+
+}
