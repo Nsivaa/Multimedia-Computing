@@ -8,8 +8,6 @@ void ofApp::setup() {
 
 
     // Iterate through the files and load them appropriately
-	// TODO: substitute images with a class: img + optional pointer to video. If video is not null, then it is a video.
-	// when we draw we draw the image and if the video is not null we draw the video thumbnail 
 
     for (int i = 0; i < dir.size(); i++) {
         string filePath = dir.getPath(i);
