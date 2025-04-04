@@ -1,5 +1,10 @@
 MULTIMEDIA COMPUTING CLASS DIAGRAM
 
+// global variable? as it needs to be accessed by multiple classes. otherwise make it a class 
+
+enum overlayType, groupFeature, sortFeature;
+
+
 ofApp {
 	// all user input methods concerning clicks, key presses etc
 
@@ -7,36 +12,36 @@ ofApp {
 
 
 	Gallery gallery;
+
+	//GUI elements displaying tick boxes for selected groupings, overlay etc 
+	ofxPanel gui;
+
+	// dictionaries of <name, button> to easily retrieve them by name (feature) 
+	dict<groupFeature, ofxToggle> group_boxes; 
+	dict<sortFeature, ofxToggle> sort_boxes;
+	dict<overlayType, ofxToggle> overlay_boxes;
+
+	// elements to navigate the gallery, play and pause videos
+	ofxButton rightArrow;
+	ofxButton leftArrow;
+	ofxButton playButton;
+	ofxButton stopButton;
+	ofxButton fullScreenButton;
 }
 
 Gallery {
 
-	displayOverlay(string overlayType);
-	groupByFeature(string groupFeature);
-	sortByFeature(string sortFeature);
+	displayOverlay(overlayType);
+	groupByFeature(groupFeature);
+	sortByFeature(sortFeature);
 
 	// methods for comparing couples of elements, one per feature. might return some sort of difference measurement. 
 	compareElementsFeature1(MediaElement media1, MediaElement media2);
 	...
 
 	MediaElement medias[];
-	enum overlayTypes, groupFeatures, sortFeatures;
 
-	//some GUI elements displaying tick boxes for selected groupings, overlay etc 
-	// should they be in a separate class? need to study ofxGui library.
-	<TickBox> group_boxes; 
-	dict<TickBox> sort_boxes;
-	dict<TickBox> overlay_boxes;
-
-	// elements to navigate the gallery, play and pause videos
-	RightNavigationArrow rightArrow;
-	LeftNavigationArrow leftArrow;
-	PlayButton playButton;
-	StopButton stopButton;
-	FullScreenButton fullScreenButton;
-
-
-	camera Camera; 
+	camera Camera; // maybe move to ofApp?
 }
 
 
