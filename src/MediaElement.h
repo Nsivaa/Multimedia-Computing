@@ -14,6 +14,8 @@ public:
 	MediaElement(string path) : videoPath(path) { generateThumbnail(); };
 
 	void generateThumbnail();
+	void drawImage(int x, int y) { image.draw(x, y); };
+	void drawImageWithContour(int x, int y, ofColor contourColor = ofColor::white, int thickness = 2);
 	bool isVideo() const;
 
 	ofImage image;

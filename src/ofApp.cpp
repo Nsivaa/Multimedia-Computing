@@ -42,7 +42,8 @@ void ofApp::draw() {
 
 		// draw all images one next to another with a small margin
         for (int i = 0; i < medias.size(); i++) {
-            medias[i].image.draw(x_pos, y_pos);
+
+            medias[i].drawImage(x_pos, y_pos);
             x_pos += medias[i].image.getWidth() + margin;
             if (x_pos > ofGetWidth() - medias[i].image.getWidth()) {
                 x_pos = margin;
