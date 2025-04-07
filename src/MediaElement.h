@@ -15,12 +15,13 @@ public:
 
 	void generateThumbnail();
 	void drawImage(int x, int y) { image.draw(x, y); };
-	void drawImageWithContour(int x, int y, ofColor contourColor = ofColor::white, int thickness = 2);
+	void drawImageWithContour(int x, int y, ofColor contourColor = ofColor::white, int thickness = 5);
 	bool isVideo() const;
 
 	ofImage image;
 	string videoPath = "";
 	// string xml_data;
+	bool isSelected = false; // Used to highlight the selected image
 
 
 };

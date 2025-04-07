@@ -23,9 +23,10 @@ void ofApp::setup() {
             medias.push_back(MediaElement(filePath));
         }
     }
-    
-    currentMedia = 0;
-
+	// Set the first media as selected
+	if (medias.size() > 0) {
+		medias[0].isSelected = true;
+	}
     ofBackground(ofColor::black);
 }
 //--------------------------------------------------------------
@@ -36,28 +37,50 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	if (dir.size() > 0) {
-		ofSetColor(ofColor::white);
-		int x_pos = margin, y_pos = margin;
+    if (dir.size() < 1) {
+        ofDrawBitmapString("No media found in the directory.", 20, 20);
+        return;
+    }
+	int x_pos = margin, y_pos = margin;
 
-		// draw all images one next to another with a small margin
-        for (int i = 0; i < medias.size(); i++) {
-
-            medias[i].drawImage(x_pos, y_pos);
-            x_pos += medias[i].image.getWidth() + margin;
-            if (x_pos > ofGetWidth() - medias[i].image.getWidth()) {
-                x_pos = margin;
-                y_pos += medias[i].image.getHeight() + margin;
-            }
+	// draw all images one next to another with a small margin
+    for (auto& media : medias) {
+        if (media.isSelected) {
+            media.drawImageWithContour(x_pos, y_pos);
         }
-	}
-	
+        else {
+            media.drawImage(x_pos, y_pos);
+        }
 
+        x_pos += media.image.getWidth() + margin;
+        if (x_pos > ofGetWidth() - media.image.getWidth()) {
+            x_pos = margin;
+            y_pos += media.image.getHeight() + margin;
+        }
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
+    switch (key) {
+	case(OF_KEY_RIGHT):
+        this->medias[currentMedia].isSelected = false;
+		currentMedia++;
+		if (currentMedia >= medias.size()) {
+			currentMedia = 0;
+		}
+        this->medias[currentMedia].isSelected = true;
+		break;
+	case(OF_KEY_LEFT):
+        this->medias[currentMedia].isSelected = false;
+        currentMedia--;
 
+        if (currentMedia < 0) {
+            currentMedia = medias.size() - 1;
+        }
+        this->medias[currentMedia].isSelected = true;
+		break;
+    }
 }
 
 //--------------------------------------------------------------
