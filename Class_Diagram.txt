@@ -4,6 +4,8 @@ MULTIMEDIA COMPUTING CLASS DIAGRAM
 
 enum overlayType, groupFeature, sortFeature;
 
+// TODO: add behaviour class, which defines how a media exhibits a different behaviour like movement, shaking, color etc.
+
 
 ofApp {
 	// all user input methods concerning clicks, key presses etc
@@ -30,7 +32,7 @@ ofApp {
 }
 
 Gallery {
-
+	displayMetaData();
 	displayOverlay(overlayType);
 	groupByFeature(groupFeature);
 	sortByFeature(sortFeature);
