@@ -6,6 +6,7 @@ void ofApp::setup() {
     dir.allowExt("jpg");
     dir.allowExt("mp4");
 
+    ofSetVerticalSync(true);
 
     // Iterate through the files and load them appropriately
 
@@ -23,34 +24,41 @@ void ofApp::setup() {
             medias.push_back(MediaElement(filePath));
         }
     }
-	// Set the first media as selected
-	if (medias.size() > 0) {
-		medias[0].isSelected = true;
-	}
+
     ofBackground(ofColor::black);
 }
 //--------------------------------------------------------------
 void ofApp::update() {
-
+	// if a video is playing, update it
+    if (currentVideoPlaying && !currentVideoPlaying->isPaused) {
+        currentVideoPlaying->videoPlayer.nextFrame();
+		currentVideoPlaying->videoPlayer.update();
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-    if (dir.size() < 1) {
-        ofDrawBitmapString("No media found in the directory.", 20, 20);
+    if (dir.size() < 1) return;
+    if (fullscreenMode){
+        drawSelectedMediaFullscreen();
         return;
     }
-	int x_pos = margin, y_pos = margin;
+    
+    int x_pos = margin, y_pos = margin;
 
-	// draw all images one next to another with a small margin
+    // draw all images one next to another with a small margin
     for (auto& media : medias) {
-        if (media.isSelected) {
+        // Check if the media is selected
+        if (&media == &medias[currentMedia]) {
             media.drawImageWithContour(x_pos, y_pos);
+			/*if (currentVideoPlaying) {
+				currentVideoPlaying->videoPlayer.update();
+				currentVideoPlaying->videoPlayer.draw(x_pos, y_pos);
+			}*/
+
         }
-        else {
-            media.drawImage(x_pos, y_pos);
-        }
+        else media.drawImage(x_pos, y_pos);
 
         x_pos += media.image.getWidth() + margin;
         if (x_pos > ofGetWidth() - media.image.getWidth()) {
@@ -58,28 +66,124 @@ void ofApp::draw() {
             y_pos += media.image.getHeight() + margin;
         }
     }
+
 }
+
+void ofApp::drawSelectedMediaFullscreen() {
+
+	// save the current screen size
+	prevScreenSize.first = ofGetWidth();
+	prevScreenSize.second = ofGetHeight();
+
+    // Set fullscreen mode
+    ofSetFullscreen(true);
+    fullscreenMode = true;
+    // Make sure we have media to show
+    if (medias.empty()) return;
+
+    // Get current screen size
+    int screenW = ofGetWidth();
+    int screenH = ofGetHeight();
+
+    // Get the currently selected media
+    MediaElement& selected = medias[currentMedia];
+
+    // Make sure the image is allocated
+    if (!selected.image.isAllocated()) return;
+
+    int imgW = selected.image.getWidth();
+    int imgH = selected.image.getHeight();
+
+    // Calculate scale to fit the screen (keep aspect ratio)
+    float scale = std::min((float)screenW / imgW, (float)screenH / imgH);
+    int drawW = imgW * scale;
+    int drawH = imgH * scale;
+
+    // Center the image
+    int x = (screenW - drawW) / 2;
+    int y = (screenH - drawH) / 2;
+
+    if (selected.isVideo()) {
+        if (selected.videoPlayer.isLoaded()) {
+            selected.videoPlayer.update();
+            selected.videoPlayer.draw(x, y, drawW, drawH);
+        }
+        else {
+            selected.image.draw(x, y, drawW, drawH);
+        }
+        return;
+    }
+    // Draw the image
+    selected.image.draw(x, y, drawW, drawH);
+}
+ 
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
     switch (key) {
-	case(OF_KEY_RIGHT):
-        this->medias[currentMedia].isSelected = false;
-		currentMedia++;
-		if (currentMedia >= medias.size()) {
-			currentMedia = 0;
-		}
-        this->medias[currentMedia].isSelected = true;
-		break;
-	case(OF_KEY_LEFT):
-        this->medias[currentMedia].isSelected = false;
-        currentMedia--;
 
-        if (currentMedia < 0) {
-            currentMedia = medias.size() - 1;
-        }
-        this->medias[currentMedia].isSelected = true;
-		break;
+        case(OF_KEY_RIGHT):
+
+            currentMedia++;
+            if (currentMedia >= medias.size()) {
+                currentMedia = 0;
+            }
+            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
+                currentVideoPlaying->videoPlayer.stop(); // Reset
+                currentVideoPlaying = nullptr;
+            }
+            break;
+
+        case(OF_KEY_LEFT):
+            currentMedia--;
+
+            if (currentMedia < 0) {
+                currentMedia = medias.size() - 1;
+            }
+            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
+                currentVideoPlaying->videoPlayer.stop(); // Reset
+                currentVideoPlaying = nullptr;
+            }
+            break;
+
+        case('f'): //toggles full screen 
+			if (!fullscreenMode) {
+				drawSelectedMediaFullscreen();
+				fullscreenMode = true;
+			}
+			else {
+				fullscreenMode = false;
+				ofSetFullscreen(false);
+				ofSetWindowShape(prevScreenSize.first, prevScreenSize.second);
+			}            
+		    break;
+
+        case(' '): // Play/pause the video
+            if (medias[currentMedia].isVideo()) {
+                MediaElement& media = medias[currentMedia];
+
+                if (!media.videoPlayer.isLoaded()) {
+                    media.videoPlayer.setPixelFormat(OF_PIXELS_RGB);
+                    media.videoPlayer.load(media.videoPath);
+                    media.videoPlayer.setLoopState(OF_LOOP_NORMAL);
+                    media.videoPlayer.play();
+                    media.isPaused = false;
+                }
+                else {
+                    if (media.isPaused) {
+                        media.videoPlayer.setPaused(false);
+                        media.isPaused = false;
+                    }
+                    else {
+                        media.videoPlayer.setPaused(true);
+                        media.isPaused = true;
+                    }
+                }
+
+                currentVideoPlaying = &media;
+            }
+            break;
+
     }
 }
 

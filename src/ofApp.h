@@ -8,6 +8,7 @@ public:
 	void setup();
 	void update();
 	void draw();
+	void ofApp::drawSelectedMediaFullscreen();
 
 	void keyPressed(int key);
 	void keyReleased(int key);
@@ -29,4 +30,9 @@ public:
 
 	int currentMedia = 0;
 	int margin = 20;
+
+	MediaElement* currentVideoPlaying = nullptr;
+	bool fullscreenMode = false;
+
+	std::pair<int, int> prevScreenSize = { 1024, 768 }; // to restore screen size when exiting fullscreen
 };
