@@ -17,11 +17,14 @@ void ofApp::setup() {
         if (extension == "jpg") {
             ofImage img;
             img.load(filePath);
-            medias.push_back(MediaElement(img));
+			auto img_media = MediaElement(img);
+			img_media.computeNormalizedHistogram();
+            medias.push_back(img_media);
         }
         else if (extension == "mp4") {
-
-            medias.push_back(MediaElement(filePath));
+			auto vid_media = MediaElement(filePath);
+            vid_media.computeNormalizedHistogram();
+            medias.push_back(vid_media);
         }
     }
 
@@ -52,19 +55,18 @@ void ofApp::draw() {
         // Check if the media is selected
         if (&media == &medias[currentMedia]) {
             media.drawImageWithContour(x_pos, y_pos);
-			/*if (currentVideoPlaying) {
-				currentVideoPlaying->videoPlayer.update();
-				currentVideoPlaying->videoPlayer.draw(x_pos, y_pos);
-			}*/
-
         }
-        else media.drawImage(x_pos, y_pos);
+        else {
+            media.drawImage(x_pos, y_pos);
+		}
+        media.drawHistogram(x_pos, y_pos + media.image.getHeight(), 100, 2000);
 
         x_pos += media.image.getWidth() + margin;
         if (x_pos > ofGetWidth() - media.image.getWidth()) {
             x_pos = margin;
             y_pos += media.image.getHeight() + margin;
         }
+
     }
 
 }
@@ -116,7 +118,7 @@ void ofApp::drawSelectedMediaFullscreen() {
     // Draw the image
     selected.image.draw(x, y, drawW, drawH);
 }
- 
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
