@@ -14,8 +14,12 @@ public:
 	MediaElement(string path) : videoPath(path) { generateThumbnail(); };
 
 	void generateThumbnail();
-	bool isVideo() const;
+	void drawImage(int x, int y) { image.draw(x, y); };
+	void drawImageWithContour(int x, int y, ofColor contourColor = ofColor::white, int thickness = 5);
+	bool isVideo() const { return !(this->videoPath.empty()); };
+	bool isPaused = false; // needed as openFramework's "isPlaying()" returns true evern if the video is currently paused
 
+	ofVideoPlayer videoPlayer; // Video player for the video element
 	ofImage image;
 	string videoPath = "";
 	// string xml_data;

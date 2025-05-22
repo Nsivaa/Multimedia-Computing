@@ -1,16 +1,10 @@
 #include "MediaElement.h"
 
-bool MediaElement::isVideo() const {
-    return !(this->videoPath.empty());
-}
-
 void MediaElement::generateThumbnail() {
 	if (!this->isVideo()) {
 		return;
 	}
-
     try {
-
         ofVideoPlayer tempVideo;
         tempVideo.load(this->videoPath);
         while (!tempVideo.isFrameNew()) {
@@ -25,3 +19,18 @@ void MediaElement::generateThumbnail() {
     }
 }
 
+void MediaElement::drawImageWithContour(int x, int y, ofColor contourColor, int thickness) {
+    // Draw the image itself
+    this->image.draw(x, y);
+
+    // Set the color for the contour
+    ofSetColor(contourColor);
+    ofNoFill(); // No fill for the contour—just an outline
+
+    for (int i = 0; i < thickness; i++) {
+        ofDrawRectangle(x - i, y - i, this->image.getWidth() + 2 * i, this->image.getHeight() + 2 * i);
+    }
+
+    // Reset color back to white (for other drawings after this)
+    ofSetColor(ofColor::white);
+}
