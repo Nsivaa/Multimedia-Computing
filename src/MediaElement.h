@@ -17,9 +17,9 @@ public:
 	void drawImage(int x, int y) { image.draw(x, y); };
 	void drawImageWithContour(int x, int y, ofColor contourColor = ofColor::white, int thickness = 5) const;
 	bool isVideo() const { return !(this->videoPath.empty()); };
-	void computeNormalizedHistogram();
-	void drawHistogram(int x, int y, int width, int height) const;
-
+	void computeNormalizedRGBHistogram();
+	void drawNormalizedRGBHistogram(int x, int y, int width, int height) const;
+	vector<float> computeEdgeHistogram(const ofImage& img, int gridX = 4, int gridY = 4);
 	bool isPaused = false; // needed as openFramework's "isPlaying()" returns true evern if the video is currently paused
 
 	ofVideoPlayer videoPlayer; // Video player for the video element

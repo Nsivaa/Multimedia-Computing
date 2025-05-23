@@ -18,12 +18,12 @@ void ofApp::setup() {
             ofImage img;
             img.load(filePath);
 			auto img_media = MediaElement(img);
-			img_media.computeNormalizedHistogram();
+			img_media.computeNormalizedRGBHistogram();
             medias.push_back(img_media);
         }
         else if (extension == "mp4") {
 			auto vid_media = MediaElement(filePath);
-            vid_media.computeNormalizedHistogram();
+            vid_media.computeNormalizedRGBHistogram();
             medias.push_back(vid_media);
         }
     }
@@ -59,7 +59,7 @@ void ofApp::draw() {
         else {
             media.drawImage(x_pos, y_pos);
 		}
-        media.drawHistogram(x_pos, y_pos + media.image.getHeight(), 100, 2000);
+        media.drawNormalizedRGBHistogram(x_pos, y_pos + media.image.getHeight(), 100, 2000);
 
         x_pos += media.image.getWidth() + margin;
         if (x_pos > ofGetWidth() - media.image.getWidth()) {
