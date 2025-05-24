@@ -1,6 +1,6 @@
 #include "MediaElement.h"
 #include "ofxOpenCv.h"
-void MediaElement::generateThumbnail() {
+void MediaElement::generateThumbnail(int width, int height) {
 	if (!this->isVideo()) {
 		return;
 	}
@@ -11,50 +11,13 @@ void MediaElement::generateThumbnail() {
 			tempVideo.update(); // Wait for the first frame to be loaded
         }
             this->image.setFromPixels(tempVideo.getPixels());
-            this->image.resize(300, 300); // Resize to image size
+            this->image.resize(width, height); // Resize to image size
             // cout << "Thumbnail successfully created for: " << videoPath << endl;
     }
     catch (const std::exception& e) {
         cout << "Error generating thumbnail: " << e.what() << endl;
     }
 }
-
-void MediaElement::drawImageWithContour(int x, int y, ofColor contourColor, int thickness) const {
-    // Draw the image itself
-    this->image.draw(x, y);
-
-    // Set the color for the contour
-    ofSetColor(contourColor);
-    ofNoFill(); // No fill for the contour—just an outline
-
-    for (int i = 0; i < thickness; i++) {
-        ofDrawRectangle(x - i, y - i, this->image.getWidth() + 2 * i, this->image.getHeight() + 2 * i);
-    }
-
-    // Reset color back to white (for other drawings after this)
-    ofSetColor(ofColor::white);
-}
-
-void MediaElement::drawNormalizedRGBHistogram(int x, int y, int width, int height) const {
-    // Safety check
-    if (redHist.empty() || greenHist.empty() || blueHist.empty()) {
-        ofLogWarning() << "Histogram data not initialized for media element.";
-        return;
-    }
-
-    // Draw the histogram for each channel (only first bin for now)
-    ofSetColor(ofColor::red);
-    ofDrawRectangle(x, y, width / 3, -height * redHist[0]);
-
-    ofSetColor(ofColor::green);
-    ofDrawRectangle(x + width / 3, y, width / 3, -height * greenHist[0]);
-
-    ofSetColor(ofColor::blue);
-    ofDrawRectangle(x + 2 * width / 3, y, width / 3, -height * blueHist[0]);
-
-    ofSetColor(ofColor::white);
-}
-
 
 void MediaElement::computeNormalizedRGBHistogram() {
 	// Compute histograms for each channel
@@ -82,9 +45,9 @@ void MediaElement::computeNormalizedRGBHistogram() {
     }
 }
 
-vector<float> MediaElement::computeEdgeHistogram(const ofImage& img, int gridX = 4, int gridY = 4) {
+void MediaElement::computeEdgeHistogram(int gridX , int gridY ) {
     vector<float> histogram(gridX * gridY, 0.0f);
-
+	ofImage img = this->image; // Assuming image is already loaded
     // 1. Convert to grayscale
     ofxCvColorImage colorImg;
     ofxCvGrayscaleImage grayImg, edgeImg;
@@ -100,7 +63,7 @@ vector<float> MediaElement::computeEdgeHistogram(const ofImage& img, int gridX =
     cv::Mat edges;
     cv::Canny(grayMat, edges, 50, 150);  // You can tweak thresholds
 
-    edgeImg = edges;
+    edgeImg.setFromPixels(edges.data, edges.cols, edges.rows);
 
     // 3. Divide into grid
     int cellW = img.getWidth() / gridX;
@@ -135,5 +98,68 @@ vector<float> MediaElement::computeEdgeHistogram(const ofImage& img, int gridX =
         }
     }
 
-    return histogram;
+    edgeHist = histogram;
+
+
 }
+
+void MediaElement::drawImageWithContour(int x, int y, ofColor contourColor, int thickness) const {
+    // Draw the image itself
+    this->image.draw(x, y);
+
+    // Set the color for the contour
+    ofSetColor(contourColor);
+    ofNoFill(); // No fill for the contour—just an outline
+
+    for (int i = 0; i < thickness; i++) {
+        ofDrawRectangle(x - i, y - i, this->image.getWidth() + 2 * i, this->image.getHeight() + 2 * i);
+    }
+
+    // Reset color back to white (for other drawings after this)
+    ofSetColor(ofColor::white);
+}
+
+void MediaElement::drawNormalizedRGBHistogram(int x, int y, int width, int height) const {
+    // Safety check
+    if (redHist.empty() || greenHist.empty() || blueHist.empty()) {
+        ofLogWarning() << "Histogram data not initialized for media element.";
+        return;
+    }
+	ofFill(); // Fill mode for drawing
+    // Draw the histogram for each channel (only first bin for now)
+    ofSetColor(ofColor::red);
+    ofDrawRectangle(x, y, width / 3, -height * redHist[0]);
+
+    ofSetColor(ofColor::green);
+    ofDrawRectangle(x + width / 3, y, width / 3, -height * greenHist[0]);
+
+    ofSetColor(ofColor::blue);
+    ofDrawRectangle(x + 2 * width / 3, y, width / 3, -height * blueHist[0]);
+
+    ofSetColor(ofColor::white);
+}
+
+
+void MediaElement::drawEdgeHistogram( int x, int y, int width, int height, int gridX, int gridY) const {
+    
+    // Safety check
+    if (edgeHist.empty()) {
+        ofLogWarning() << "Edge histogram data not initialized for media element.";
+        return;
+    }
+	ofFill(); // Fill mode for drawing
+    int cellW = width / gridX;
+    int cellH = height / gridY;
+
+    for (int j = 0; j < gridY; j++) {
+        for (int i = 0; i < gridX; i++) {
+            float value = this -> edgeHist [j * gridX + i];
+            ofSetColor(255 * value); // brightness proportional to edge density
+            ofDrawRectangle(x + i * cellW, y + j * cellH, cellW, cellH);
+        }
+    }
+
+    ofSetColor(255); // Reset color
+
+}
+

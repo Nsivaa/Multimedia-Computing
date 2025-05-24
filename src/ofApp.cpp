@@ -17,13 +17,15 @@ void ofApp::setup() {
         if (extension == "jpg") {
             ofImage img;
             img.load(filePath);
-			auto img_media = MediaElement(img);
+			auto img_media = MediaElement(img, standardImageSize.first, standardImageSize.second);
 			img_media.computeNormalizedRGBHistogram();
+			img_media.computeEdgeHistogram();
             medias.push_back(img_media);
         }
         else if (extension == "mp4") {
 			auto vid_media = MediaElement(filePath);
             vid_media.computeNormalizedRGBHistogram();
+            vid_media.computeEdgeHistogram();
             medias.push_back(vid_media);
         }
     }
@@ -53,14 +55,17 @@ void ofApp::draw() {
     // draw all images one next to another with a small margin
     for (auto& media : medias) {
         // Check if the media is selected
+        
         if (&media == &medias[currentMedia]) {
             media.drawImageWithContour(x_pos, y_pos);
         }
         else {
             media.drawImage(x_pos, y_pos);
 		}
-        media.drawNormalizedRGBHistogram(x_pos, y_pos + media.image.getHeight(), 100, 2000);
-
+        if (showEdgeHist) {
+            media.drawNormalizedRGBHistogram(x_pos, y_pos + media.image.getHeight(), 100, 2000);
+            media.drawEdgeHistogram(x_pos, y_pos + media.image.getHeight() + 120, 100, 100, 4, 4);
+        }
         x_pos += media.image.getWidth() + margin;
         if (x_pos > ofGetWidth() - media.image.getWidth()) {
             x_pos = margin;
@@ -186,7 +191,11 @@ void ofApp::keyPressed(int key) {
             }
             break;
 
+        case('h'): // show/hide edge histogram
+            showEdgeHist = !showEdgeHist;
+            break;
     }
+    
 }
 
 //--------------------------------------------------------------
