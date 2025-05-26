@@ -35,6 +35,9 @@ public:
 	bool fullscreenMode = false;
 	bool showEdgeHist = false;
 	bool showDominantColor = false;
+	bool showLuminanceMap = false;
+	bool showRGBHist = false;
+
 	std::pair<int, int> prevScreenSize = { 1024, 768 }; // to restore screen size when exiting fullscreen
 	std::pair<int, int> standardImageSize = { 300, 300 }; // standard image size for the application
 };

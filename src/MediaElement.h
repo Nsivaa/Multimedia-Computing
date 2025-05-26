@@ -9,26 +9,43 @@ class MediaElement {
 
 
 public:
+	
+	// CONSTRUCTORS
+
 	MediaElement() {};
 	MediaElement(ofImage img) : image(img) {};
 	MediaElement(ofImage img, int width, int height) : image(img) { image.resize(width, height); }; // resize the image to the given width and height
-	MediaElement(string path) : videoPath(path) { generateThumbnail(); };
+	MediaElement(string path) : videoPath(path) { generateThumbnail(); }; // constructor for video elements
+	
+	// MISC METHODS
 
+	bool isVideo() const { return !(this->videoPath.empty()); };
+	ofColor getHeatmapColor(float value); // Returns a color based on the luminance value for heatmap visualization
+
+	// PROCESSING METHODS
 	void generateThumbnail(int width = 300, int height = 300);
+	void computeNormalizedRGBHistogram();
+	void computeEdgeMap();
+	void computeDominantColor();
+	void computeLuminanceMap();
+	
+	// DRAWER METHODS 
+
 	void drawImage(int x, int y) const { image.draw(x, y); };
 	void drawImageWithContour(int x, int y, ofColor contourColor = ofColor::white, int thickness = 5) const;
-	bool isVideo() const { return !(this->videoPath.empty()); };
-	void computeNormalizedRGBHistogram();
-	void drawNormalizedRGBHistogram(int x, int y, int width, int height) const;
-	void computeEdgeMap();
 	void drawEdgeMap(int x, int y, int width, int height) const;
-	void computeDominantColor();
+	void drawNormalizedRGBHistogram(int x, int y, int width, int height) const;
+	void drawLuminanceMap(int x, int y) const;
+
+	// ATTRIBUTES
+
 	bool isPaused = false; // needed as openFramework's "isPlaying()" returns true evern if the video is currently paused
 	ofVideoPlayer videoPlayer; // Video player for the video element
 	ofImage image;
 	string videoPath = "";
 	// string xml_data;
 	ofColor dominantColor;
+	ofImage luminanceMap; // Heatmap-style luminance visualization
 
 
 	std::vector<float> redHist, greenHist, blueHist;

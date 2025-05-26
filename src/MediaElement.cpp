@@ -125,6 +125,45 @@ void MediaElement::computeDominantColor() {
     }
 }
 
+void MediaElement::computeLuminanceMap() {
+    ofPixels& pixels = image.getPixels();
+    int w = pixels.getWidth();
+    int h = pixels.getHeight();
+
+    ofPixels heatmapPixels;
+    heatmapPixels.allocate(w, h, OF_PIXELS_RGB);
+
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            ofColor color = pixels.getColor(x, y);
+            float luminance = color.getLightness(); 
+            // Normalize luminance to [0,1]
+            float normLum = ofClamp(luminance / 255.0f, 0.0f, 1.0f);
+
+            // Convert to heatmap color
+            ofColor heatColor = getHeatmapColor(normLum);
+            heatmapPixels.setColor(x, y, heatColor);
+        }
+    }
+
+    luminanceMap.setFromPixels(heatmapPixels);
+}
+
+ofColor MediaElement::getHeatmapColor(float value) {
+    value = ofClamp(value, 0.0, 1.0);
+
+    // Simple blue-green-red heatmap gradient
+    if (value < 0.5f) {
+        return ofColor(0, 2 * value * 255, 255); // Blue to Cyan
+    }
+    else {
+        return ofColor(2 * (value - 0.5f) * 255, 255 - 2 * (value - 0.5f) * 255, 0); // Yellow to Red
+    }
+}
+
+// -------------------------------------------------------------------------------------------------------------------------
+// DRAWER METHODS 
+// -------------------------------------------------------------------------------------------------------------------------
 
 void MediaElement::drawImageWithContour(int x, int y, ofColor contourColor, int thickness) const {
     // Draw the image itself
@@ -143,24 +182,35 @@ void MediaElement::drawImageWithContour(int x, int y, ofColor contourColor, int 
 }
 
 void MediaElement::drawNormalizedRGBHistogram(int x, int y, int width, int height) const {
-    // Safety check
-    if (redHist.empty() || greenHist.empty() || blueHist.empty()) {
-        ofLogWarning() << "Histogram data not initialized for media element.";
-        return;
-    }
-	ofFill(); // Fill mode for drawing
-    // Draw the histogram for each channel (only first bin for now)
-    ofSetColor(ofColor::red);
-    ofDrawRectangle(x, y, width / 3, -height * redHist[0]);
 
-    ofSetColor(ofColor::green);
-    ofDrawRectangle(x + width / 3, y, width / 3, -height * greenHist[0]);
+    const int numBins = (int)redHist.size(); // Assuming all histograms have same bin count
+    const float sectionWidth = width / 3.0f; // Width allocated per color channel
+    const float barSpacing = 1.0f;           // Spacing between bars in pixels
 
-    ofSetColor(ofColor::blue);
-    ofDrawRectangle(x + 2 * width / 3, y, width / 3, -height * blueHist[0]);
+    ofFill();
 
-    ofSetColor(ofColor::white);
+    // Helper lambda to draw a single color histogram
+    auto drawHistogram = [&](const std::vector<float>& hist, float startX, const ofColor& color) {
+        ofSetColor(color);
+        float barWidth = (sectionWidth - (numBins - 1) * barSpacing) / numBins;
+
+        for (int i = 0; i < numBins; ++i) {
+            float barHeight = height * hist[i];
+            float barX = startX + i * (barWidth + barSpacing);
+            ofDrawRectangle(barX, y, barWidth, -barHeight);
+        }
+    };
+
+    // Draw Red histogram
+    drawHistogram(redHist, x, ofColor::red);
+    // Draw Green histogram
+    drawHistogram(greenHist, x + sectionWidth, ofColor::green);
+    // Draw Blue histogram
+    drawHistogram(blueHist, x + 2 * sectionWidth, ofColor::blue);
+
+    ofSetColor(ofColor::white); // Reset color
 }
+
 
 
 void MediaElement::drawEdgeMap(int x, int y, int width, int height) const {
@@ -178,6 +228,7 @@ void MediaElement::drawEdgeMap(int x, int y, int width, int height) const {
     // Cell size based on provided drawing area
     float cellWidth = static_cast<float>(width) / gridCols;
     float cellHeight = static_cast<float>(height) / gridRows;
+    ofEnableAlphaBlending();
 
     for (int row = 0; row < gridRows; ++row) {
         for (int col = 0; col < gridCols; ++col) {
@@ -201,6 +252,16 @@ void MediaElement::drawEdgeMap(int x, int y, int width, int height) const {
 
     // Reset color
     ofSetColor(255);
+    ofDisableAlphaBlending();
+
 }
 
+void MediaElement::drawLuminanceMap(int x, int y) const {
+    ofEnableAlphaBlending(); // Enable transparency
 
+    ofSetColor(255, 255, 255, 120); // White with ~50% transparency
+    luminanceMap.draw(x, y);
+
+    ofSetColor(255); // Reset to opaque white
+    ofDisableAlphaBlending();
+}

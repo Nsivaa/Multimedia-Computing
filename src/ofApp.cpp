@@ -8,7 +8,14 @@ void ofApp::setup() {
 
     ofSetVerticalSync(true);
 
-    // Iterate through the files and load them appropriately
+    // Helper lambda to process a media element (image or video)
+    auto processMedia = [&](MediaElement& media) {
+        media.computeNormalizedRGBHistogram();
+        media.computeEdgeMap();
+        media.computeDominantColor();
+        media.computeLuminanceMap();
+        medias.push_back(media);
+        };
 
     for (int i = 0; i < dir.size(); i++) {
         string filePath = dir.getPath(i);
@@ -17,23 +24,18 @@ void ofApp::setup() {
         if (extension == "jpg") {
             ofImage img;
             img.load(filePath);
-			auto img_media = MediaElement(img, standardImageSize.first, standardImageSize.second);
-			img_media.computeNormalizedRGBHistogram();
-			img_media.computeDominantColor();
-			img_media.computeEdgeMap();
-            medias.push_back(img_media);
+            MediaElement img_media(img, standardImageSize.first, standardImageSize.second);
+            processMedia(img_media);
         }
         else if (extension == "mp4") {
-			auto vid_media = MediaElement(filePath);
-            vid_media.computeNormalizedRGBHistogram();
-            vid_media.computeEdgeMap();
-			vid_media.computeDominantColor();
-            medias.push_back(vid_media);
+            MediaElement vid_media(filePath);
+            processMedia(vid_media);
         }
     }
 
     ofBackground(ofColor::black);
 }
+
 //--------------------------------------------------------------
 void ofApp::update() {
 	// if a video is playing, update it
@@ -54,29 +56,46 @@ void ofApp::draw() {
     
     int x_pos = margin, y_pos = margin;
 
-    // draw all images one next to another with a small margin
     for (auto& media : medias) {
-        // Check if the media is selected
-        
+        int drawX = x_pos;
+        int drawY = y_pos;
+
+        // Draw image with optional dominant color contour
         if (&media == &medias[currentMedia]) {
-            media.drawImageWithContour(x_pos, y_pos);
+            media.drawImageWithContour(drawX, drawY);
         }
         else if (showDominantColor) {
-			media.drawImageWithContour(x_pos, y_pos, media.dominantColor); // Draw with dominant color contour
+            media.drawImageWithContour(drawX, drawY, media.dominantColor);
         }
         else {
-            media.drawImage(x_pos, y_pos);
-		}
-        if (showEdgeHist) {
-            // media.drawNormalizedRGBHistogram(x_pos, y_pos + media.image.getHeight(), 100, 2000);
-            media.drawEdgeMap(x_pos, y_pos, media.image.getWidth(), media.image.getHeight());
+            media.drawImage(drawX, drawY);
         }
+
+        // Draw overlays using the same y base
+        if (showEdgeHist) {
+            media.drawEdgeMap(drawX, drawY, media.image.getWidth(), media.image.getHeight());
+        }
+
+        if (showLuminanceMap) {
+            media.drawLuminanceMap(drawX, drawY);
+        }
+
+        if (showRGBHist) {
+            int histW = 150;
+            int histH = 300;
+            int histX = drawX + 5; // 5 px padding from left edge of image
+            int histY = drawY + media.image.getHeight() - histH - 5; // 5 px padding from bottom edge of image
+            ofSetColor(255); // full opacity
+            media.drawNormalizedRGBHistogram(histX, histY + histH, histW, histH);
+        }
+
+
+        // Move to next column or row
         x_pos += media.image.getWidth() + margin;
         if (x_pos > ofGetWidth() - media.image.getWidth()) {
             x_pos = margin;
-            y_pos += media.image.getHeight() + margin;
+            y_pos += media.image.getHeight() + margin + 20; // 100 to leave space for histogram
         }
-
     }
 
 }
@@ -196,13 +215,20 @@ void ofApp::keyPressed(int key) {
         }
         break;
 
-    case('h'): // show/hide edge histogram
+    case('e'): // show/hide edge histogram
         showEdgeHist = !showEdgeHist;
         break;
 
     case('c'): // show dominant color contour
         showDominantColor = !showDominantColor;
         break;
+
+    case('l'): // show luminance map
+        showLuminanceMap = !showLuminanceMap;
+        break;
+
+    case('r'): // show RGB histogram
+        showRGBHist = !showRGBHist;
     }
 }
 
