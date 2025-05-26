@@ -19,13 +19,15 @@ void ofApp::setup() {
             img.load(filePath);
 			auto img_media = MediaElement(img, standardImageSize.first, standardImageSize.second);
 			img_media.computeNormalizedRGBHistogram();
-			img_media.computeEdgeHistogram();
+			img_media.computeDominantColor();
+			img_media.computeEdgeMap();
             medias.push_back(img_media);
         }
         else if (extension == "mp4") {
 			auto vid_media = MediaElement(filePath);
             vid_media.computeNormalizedRGBHistogram();
-            vid_media.computeEdgeHistogram();
+            vid_media.computeEdgeMap();
+			vid_media.computeDominantColor();
             medias.push_back(vid_media);
         }
     }
@@ -59,12 +61,15 @@ void ofApp::draw() {
         if (&media == &medias[currentMedia]) {
             media.drawImageWithContour(x_pos, y_pos);
         }
+        else if (showDominantColor) {
+			media.drawImageWithContour(x_pos, y_pos, media.dominantColor); // Draw with dominant color contour
+        }
         else {
             media.drawImage(x_pos, y_pos);
 		}
         if (showEdgeHist) {
             // media.drawNormalizedRGBHistogram(x_pos, y_pos + media.image.getHeight(), 100, 2000);
-            media.drawEdgeHistogram(x_pos, y_pos, media.image.getWidth(), media.image.getHeight());
+            media.drawEdgeMap(x_pos, y_pos, media.image.getWidth(), media.image.getHeight());
         }
         x_pos += media.image.getWidth() + margin;
         if (x_pos > ofGetWidth() - media.image.getWidth()) {
@@ -129,73 +134,76 @@ void ofApp::drawSelectedMediaFullscreen() {
 void ofApp::keyPressed(int key) {
     switch (key) {
 
-        case(OF_KEY_RIGHT):
+    case(OF_KEY_RIGHT):
 
-            currentMedia++;
-            if (currentMedia >= medias.size()) {
-                currentMedia = 0;
+        currentMedia++;
+        if (currentMedia >= medias.size()) {
+            currentMedia = 0;
+        }
+        if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
+            currentVideoPlaying->videoPlayer.stop(); // Reset
+            currentVideoPlaying = nullptr;
+        }
+        break;
+
+    case(OF_KEY_LEFT):
+        currentMedia--;
+
+        if (currentMedia < 0) {
+            currentMedia = medias.size() - 1;
+        }
+        if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
+            currentVideoPlaying->videoPlayer.stop(); // Reset
+            currentVideoPlaying = nullptr;
+        }
+        break;
+
+    case('f'): //toggles full screen 
+        if (!fullscreenMode) {
+            drawSelectedMediaFullscreen();
+            fullscreenMode = true;
+        }
+        else {
+            fullscreenMode = false;
+            ofSetFullscreen(false);
+            ofSetWindowShape(prevScreenSize.first, prevScreenSize.second);
+        }
+        break;
+
+    case(' '): // Play/pause the video
+        if (medias[currentMedia].isVideo()) {
+            MediaElement& media = medias[currentMedia];
+
+            if (!media.videoPlayer.isLoaded()) {
+                media.videoPlayer.setPixelFormat(OF_PIXELS_RGB);
+                media.videoPlayer.load(media.videoPath);
+                media.videoPlayer.setLoopState(OF_LOOP_NORMAL);
+                media.videoPlayer.play();
+                media.isPaused = false;
             }
-            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
-                currentVideoPlaying->videoPlayer.stop(); // Reset
-                currentVideoPlaying = nullptr;
-            }
-            break;
-
-        case(OF_KEY_LEFT):
-            currentMedia--;
-
-            if (currentMedia < 0) {
-                currentMedia = medias.size() - 1;
-            }
-            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
-                currentVideoPlaying->videoPlayer.stop(); // Reset
-                currentVideoPlaying = nullptr;
-            }
-            break;
-
-        case('f'): //toggles full screen 
-			if (!fullscreenMode) {
-				drawSelectedMediaFullscreen();
-				fullscreenMode = true;
-			}
-			else {
-				fullscreenMode = false;
-				ofSetFullscreen(false);
-				ofSetWindowShape(prevScreenSize.first, prevScreenSize.second);
-			}            
-		    break;
-
-        case(' '): // Play/pause the video
-            if (medias[currentMedia].isVideo()) {
-                MediaElement& media = medias[currentMedia];
-
-                if (!media.videoPlayer.isLoaded()) {
-                    media.videoPlayer.setPixelFormat(OF_PIXELS_RGB);
-                    media.videoPlayer.load(media.videoPath);
-                    media.videoPlayer.setLoopState(OF_LOOP_NORMAL);
-                    media.videoPlayer.play();
+            else {
+                if (media.isPaused) {
+                    media.videoPlayer.setPaused(false);
                     media.isPaused = false;
                 }
                 else {
-                    if (media.isPaused) {
-                        media.videoPlayer.setPaused(false);
-                        media.isPaused = false;
-                    }
-                    else {
-                        media.videoPlayer.setPaused(true);
-                        media.isPaused = true;
-                    }
+                    media.videoPlayer.setPaused(true);
+                    media.isPaused = true;
                 }
-
-                currentVideoPlaying = &media;
             }
-            break;
 
-        case('h'): // show/hide edge histogram
-            showEdgeHist = !showEdgeHist;
-            break;
+            currentVideoPlaying = &media;
+        }
+        break;
+
+    case('h'): // show/hide edge histogram
+        showEdgeHist = !showEdgeHist;
+        break;
+
+    case('c'): // show dominant color contour
+        showDominantColor = !showDominantColor;
+        break;
     }
-    
 }
 
 //--------------------------------------------------------------

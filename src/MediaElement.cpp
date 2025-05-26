@@ -45,7 +45,7 @@ void MediaElement::computeNormalizedRGBHistogram() {
     }
 }
 
-void MediaElement::computeEdgeHistogram() {
+void MediaElement::computeEdgeMap() {
 	int gridX = this->edgeGridCols;
 	int gridY = this->edgeGridRows;
     vector<float> histogram(gridX * gridY, 0.0f);
@@ -101,9 +101,30 @@ void MediaElement::computeEdgeHistogram() {
     }
 
     edgeHist = histogram;
-
-
 }
+
+void MediaElement::computeDominantColor() {
+    if (!image.isAllocated()) return;
+
+    ofPixels& pixels = image.getPixels();
+    uint64_t r = 0, g = 0, b = 0;
+    int count = 0;
+
+    for (int i = 0; i < pixels.size(); i += 3) {
+        r += pixels[i];
+        g += pixels[i + 1];
+        b += pixels[i + 2];
+        count++;
+    }
+
+    if (count > 0) {
+        r /= count;
+        g /= count;
+        b /= count;
+        dominantColor = ofColor(r, g, b);
+    }
+}
+
 
 void MediaElement::drawImageWithContour(int x, int y, ofColor contourColor, int thickness) const {
     // Draw the image itself
@@ -142,7 +163,7 @@ void MediaElement::drawNormalizedRGBHistogram(int x, int y, int width, int heigh
 }
 
 
-void MediaElement::drawEdgeHistogram(int x, int y, int width, int height) const {
+void MediaElement::drawEdgeMap(int x, int y, int width, int height) const {
     
     if (edgeHist.empty()) return;
 	int gridCols = this->edgeGridCols;

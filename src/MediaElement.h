@@ -20,14 +20,16 @@ public:
 	bool isVideo() const { return !(this->videoPath.empty()); };
 	void computeNormalizedRGBHistogram();
 	void drawNormalizedRGBHistogram(int x, int y, int width, int height) const;
-	void computeEdgeHistogram();
-	void drawEdgeHistogram(int x, int y, int width, int height) const;
-
+	void computeEdgeMap();
+	void drawEdgeMap(int x, int y, int width, int height) const;
+	void computeDominantColor();
 	bool isPaused = false; // needed as openFramework's "isPlaying()" returns true evern if the video is currently paused
 	ofVideoPlayer videoPlayer; // Video player for the video element
 	ofImage image;
 	string videoPath = "";
 	// string xml_data;
+	ofColor dominantColor;
+
 
 	std::vector<float> redHist, greenHist, blueHist;
 	std::vector<float> edgeHist; // Edge histogram
