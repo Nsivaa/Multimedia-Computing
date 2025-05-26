@@ -1,6 +1,12 @@
 #pragma once
 #include "ofMain.h"
 
+enum LuminanceGroup { LOW, MEDIUM, HIGH };
+std::map<LuminanceGroup, string> luminanceGroupNames = {
+	{ LOW, "Low" },
+	{ MEDIUM, "Medium" },
+	{ HIGH, "High" }
+};
 
 class MediaElement {
 	// The MediaElement class is used to handle both videos and images in the gallery. 
@@ -21,6 +27,7 @@ public:
 
 	bool isVideo() const { return !(this->videoPath.empty()); };
 	ofColor getHeatmapColor(float value); // Returns a color based on the luminance value for heatmap visualization
+	void assignLuminanceGroup(); // Assigns the luminance group based on the average luminance value
 
 	// PROCESSING METHODS
 	void generateThumbnail(int width = 300, int height = 300);
@@ -28,7 +35,7 @@ public:
 	void computeEdgeMap();
 	void computeDominantColor();
 	void computeLuminanceMap();
-	
+	void computeAverageLuminance();
 	// DRAWER METHODS 
 
 	void drawImage(int x, int y) const { image.draw(x, y); };
@@ -46,12 +53,12 @@ public:
 	// string xml_data;
 	ofColor dominantColor;
 	ofImage luminanceMap; // Heatmap-style luminance visualization
-
+	LuminanceGroup luminanceGroup = LOW; // Grouping of luminance values into LOW, MEDIUM, HIGH
 
 	std::vector<float> redHist, greenHist, blueHist;
 	std::vector<float> edgeHist; // Edge histogram
 	int edgeGridRows = 32;
 	int edgeGridCols = 32;
-
+	float averageLuminance = 0;
 };
 

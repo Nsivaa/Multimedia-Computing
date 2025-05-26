@@ -149,6 +149,17 @@ void MediaElement::computeLuminanceMap() {
     luminanceMap.setFromPixels(heatmapPixels);
 }
 
+void MediaElement::computeAverageLuminance() {
+    float totalLuminance = 0;
+    for (int y = 0; y < luminanceMap.getHeight(); y++) {
+        for (int x = 0; x < luminanceMap.getWidth(); x++) {
+            ofColor color = luminanceMap.getColor(x, y);
+            totalLuminance += (color.r + color.g + color.b) / 3;
+        }
+    }
+    averageLuminance = totalLuminance / (luminanceMap.getHeight() * luminanceMap.getWidth());
+}
+
 ofColor MediaElement::getHeatmapColor(float value) {
     value = ofClamp(value, 0.0, 1.0);
 
@@ -158,6 +169,20 @@ ofColor MediaElement::getHeatmapColor(float value) {
     }
     else {
         return ofColor(2 * (value - 0.5f) * 255, 255 - 2 * (value - 0.5f) * 255, 0); // Yellow to Red
+    }
+}
+
+void MediaElement::assignLuminanceGroup() {
+    computeAverageLuminance();
+
+    if (averageLuminance < 85) {
+        luminanceGroup = LOW;
+    }
+    else if (averageLuminance < 170) {
+        luminanceGroup = MEDIUM;
+    }
+    else {
+        luminanceGroup = HIGH;
     }
 }
 

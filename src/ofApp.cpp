@@ -14,6 +14,7 @@ void ofApp::setup() {
         media.computeEdgeMap();
         media.computeDominantColor();
         media.computeLuminanceMap();
+        media.assignLuminanceGroup();
         medias.push_back(media);
         };
 
@@ -70,6 +71,9 @@ void ofApp::draw() {
         else {
             media.drawImage(drawX, drawY);
         }
+        std::string colorString = luminanceGroupNames[media.luminanceGroup] +
+            " luminance (" + std::to_string(media.averageLuminance) + ")";
+        ofDrawBitmapString(colorString, drawX, drawY - 10);
 
         // Draw overlays using the same y base
         if (showEdgeHist) {
@@ -144,7 +148,7 @@ void ofApp::drawSelectedMediaFullscreen() {
     int x = (screenW - drawW) / 2;
     int y = (screenH - drawH) / 2;
 
-    if (selected.isVideo()) {
+    if (selected.isVideo()) { // playing the video
         if (selected.videoPlayer.isLoaded()) {
             selected.videoPlayer.update();
             selected.videoPlayer.draw(x, y, drawW, drawH);
@@ -161,9 +165,9 @@ void ofApp::drawSelectedMediaFullscreen() {
 void ofApp::drawLegend() {
     std::vector<std::string> lines = {
         "Legend (press 'h' to hide):",
-        "-> / <-        : Next / Previous media",
+        "-> / <-       : Next / Previous media",
         "'f'           : Toggle fullscreen",
-        "Spacebar      : Play/Pause video",
+        "Spacebar      : Play/Pause video (only while in fullscreen mode)",
         "'e'           : Toggle edge histogram",
         "'c'           : Toggle dominant color contour",
         "'l'           : Toggle luminance map",
