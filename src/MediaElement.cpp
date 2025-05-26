@@ -45,7 +45,9 @@ void MediaElement::computeNormalizedRGBHistogram() {
     }
 }
 
-void MediaElement::computeEdgeHistogram(int gridX , int gridY ) {
+void MediaElement::computeEdgeHistogram() {
+	int gridX = this->edgeGridCols;
+	int gridY = this->edgeGridRows;
     vector<float> histogram(gridX * gridY, 0.0f);
 	ofImage img = this->image; // Assuming image is already loaded
     // 1. Convert to grayscale
@@ -140,26 +142,44 @@ void MediaElement::drawNormalizedRGBHistogram(int x, int y, int width, int heigh
 }
 
 
-void MediaElement::drawEdgeHistogram( int x, int y, int width, int height, int gridX, int gridY) const {
+void MediaElement::drawEdgeHistogram(int x, int y, int width, int height) const {
     
-    // Safety check
-    if (edgeHist.empty()) {
-        ofLogWarning() << "Edge histogram data not initialized for media element.";
-        return;
-    }
-	ofFill(); // Fill mode for drawing
-    int cellW = width / gridX;
-    int cellH = height / gridY;
+    if (edgeHist.empty()) return;
+	int gridCols = this->edgeGridCols;
+	int gridRows = this->edgeGridRows;
+    int totalCells = gridRows * gridCols;
+    if (edgeHist.size() != totalCells) return;
 
-    for (int j = 0; j < gridY; j++) {
-        for (int i = 0; i < gridX; i++) {
-            float value = this -> edgeHist [j * gridX + i];
-            ofSetColor(255 * value); // brightness proportional to edge density
-            ofDrawRectangle(x + i * cellW, y + j * cellH, cellW, cellH);
+    // Determine max value for normalization
+    float maxVal = *std::max_element(edgeHist.begin(), edgeHist.end());
+    if (maxVal <= 0.0f) return;
+
+    // Cell size based on provided drawing area
+    float cellWidth = static_cast<float>(width) / gridCols;
+    float cellHeight = static_cast<float>(height) / gridRows;
+
+    for (int row = 0; row < gridRows; ++row) {
+        for (int col = 0; col < gridCols; ++col) {
+            int index = row * gridCols + col;
+            float normalizedValue = edgeHist[index] / maxVal;
+            ofFill();
+            // Map normalized value to grayscale brightness
+            ofSetColor(255 * normalizedValue, 255 * normalizedValue, 255 * normalizedValue, 150); // Alpha blend
+
+            float cellX = x + col * cellWidth;
+            float cellY = y + row * cellHeight;
+            ofDrawRectangle(cellX, cellY, cellWidth, cellHeight);
         }
     }
 
-    ofSetColor(255); // Reset color
+    // draw grid border
+    ofNoFill();
+    ofSetColor(100); // light gray
+    ofDrawRectangle(x, y, width, height);
+    ofFill();
 
+    // Reset color
+    ofSetColor(255);
 }
+
 

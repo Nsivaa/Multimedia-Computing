@@ -20,8 +20,8 @@ public:
 	bool isVideo() const { return !(this->videoPath.empty()); };
 	void computeNormalizedRGBHistogram();
 	void drawNormalizedRGBHistogram(int x, int y, int width, int height) const;
-	void computeEdgeHistogram(int gridX = 4, int gridY = 4);
-	void drawEdgeHistogram(int x, int y, int width, int height, int gridX, int gridY) const;
+	void computeEdgeHistogram();
+	void drawEdgeHistogram(int x, int y, int width, int height) const;
 
 	bool isPaused = false; // needed as openFramework's "isPlaying()" returns true evern if the video is currently paused
 	ofVideoPlayer videoPlayer; // Video player for the video element
@@ -31,5 +31,8 @@ public:
 
 	std::vector<float> redHist, greenHist, blueHist;
 	std::vector<float> edgeHist; // Edge histogram
+	int edgeGridRows = 32;
+	int edgeGridCols = 32;
+
 };
 

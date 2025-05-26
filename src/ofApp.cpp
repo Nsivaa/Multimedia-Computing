@@ -63,8 +63,8 @@ void ofApp::draw() {
             media.drawImage(x_pos, y_pos);
 		}
         if (showEdgeHist) {
-            media.drawNormalizedRGBHistogram(x_pos, y_pos + media.image.getHeight(), 100, 2000);
-            media.drawEdgeHistogram(x_pos, y_pos + media.image.getHeight() + 120, 100, 100, 4, 4);
+            // media.drawNormalizedRGBHistogram(x_pos, y_pos + media.image.getHeight(), 100, 2000);
+            media.drawEdgeHistogram(x_pos, y_pos, media.image.getWidth(), media.image.getHeight());
         }
         x_pos += media.image.getWidth() + margin;
         if (x_pos > ofGetWidth() - media.image.getWidth()) {
