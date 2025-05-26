@@ -82,13 +82,12 @@ void ofApp::draw() {
 
         if (showRGBHist) {
             int histW = 150;
-            int histH = 300;
+            int histH = 400;
             int histX = drawX + 5; // 5 px padding from left edge of image
             int histY = drawY + media.image.getHeight() - histH - 5; // 5 px padding from bottom edge of image
             ofSetColor(255); // full opacity
             media.drawNormalizedRGBHistogram(histX, histY + histH, histW, histH);
         }
-
 
         // Move to next column or row
         x_pos += media.image.getWidth() + margin;
@@ -96,6 +95,17 @@ void ofApp::draw() {
             x_pos = margin;
             y_pos += media.image.getHeight() + margin + 20; // 100 to leave space for histogram
         }
+    }
+
+    if (showLegend) {
+        drawLegend();
+    }
+    else {
+        std::string hint = "Press 'h' to open legend";
+        int x = 20;
+        int y = ofGetHeight() - 20; // 20 px from bottom
+        ofSetColor(255);            // White text
+        ofDrawBitmapString(hint, x, y);
     }
 
 }
@@ -146,6 +156,39 @@ void ofApp::drawSelectedMediaFullscreen() {
     }
     // Draw the image
     selected.image.draw(x, y, drawW, drawH);
+}
+
+void ofApp::drawLegend() {
+    std::vector<std::string> lines = {
+        "Legend (press 'h' to hide):",
+        "-> / <-        : Next / Previous media",
+        "'f'           : Toggle fullscreen",
+        "Spacebar      : Play/Pause video",
+        "'e'           : Toggle edge histogram",
+        "'c'           : Toggle dominant color contour",
+        "'l'           : Toggle luminance map",
+        "'r'           : Toggle RGB histogram",
+        "'h'           : Toggle this legend"
+    };
+
+    int lineHeight = 20;
+    int padding = 10;
+    int legendHeight = lineHeight * lines.size() + padding * 2;
+    int legendWidth = 400;
+    int x = 20;
+    int y = ofGetHeight() - legendHeight - 20;  // 20 px above bottom of screen
+
+    // Draw semi-transparent dark background
+    ofSetColor(0, 0, 0, 180);
+    ofDrawRectangle(x, y, legendWidth, legendHeight);
+
+    // Draw white text
+    ofSetColor(255);
+    int textY = y + padding + lineHeight;
+    for (const auto& line : lines) {
+        ofDrawBitmapString(line, x + padding, textY);
+        textY += lineHeight;
+    }
 }
 
 
@@ -229,6 +272,11 @@ void ofApp::keyPressed(int key) {
 
     case('r'): // show RGB histogram
         showRGBHist = !showRGBHist;
+        break;
+
+	case('h'): // show/hide legend
+        showLegend = !showLegend;
+        break;
     }
 }
 

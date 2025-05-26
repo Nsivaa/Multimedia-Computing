@@ -8,7 +8,8 @@ public:
 	void setup();
 	void update();
 	void draw();
-	void ofApp::drawSelectedMediaFullscreen();
+	void drawSelectedMediaFullscreen();
+	void drawLegend();
 
 	void keyPressed(int key);
 	void keyReleased(int key);
@@ -37,6 +38,7 @@ public:
 	bool showDominantColor = false;
 	bool showLuminanceMap = false;
 	bool showRGBHist = false;
+	bool showLegend = false;
 
 	std::pair<int, int> prevScreenSize = { 1024, 768 }; // to restore screen size when exiting fullscreen
 	std::pair<int, int> standardImageSize = { 300, 300 }; // standard image size for the application
