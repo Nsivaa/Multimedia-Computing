@@ -725,6 +725,8 @@
     <ClInclude Include="..\..\..\addons\ofxOpenCv\libs\opencv\include\opencv4\opencv2\video\tracking.hpp" />
     <ClInclude Include="..\..\..\addons\ofxOpenCv\libs\opencv\include\opencv4\opencv2\video\video.hpp" />
     <ClInclude Include="..\..\..\addons\ofxOpenCv\libs\opencv\include\opencv4\opencv2\video.hpp" />
+    <ClInclude Include="src\utils.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">

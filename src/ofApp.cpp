@@ -5,7 +5,9 @@ void ofApp::setup() {
     dir.listDir("images/of_logos/"); // Media directory
     dir.allowExt("jpg");
     dir.allowExt("mp4");
-
+    if (!videoIcon.load("video_icon.png")) {
+        ofLogError() << "Failed to load video_icon.png";
+    }
     ofSetVerticalSync(true);
 
     // Helper lambda to process a media element (image or video)
@@ -71,7 +73,16 @@ void ofApp::draw() {
         else {
             media.drawImage(drawX, drawY);
         }
-        std::string colorString = luminanceGroupNames[media.luminanceGroup] +
+        
+		if (media.isVideo()) { // Draw video icon if this is a video
+            int iconSize = 24;
+            int iconX = drawX + media.image.getWidth() - iconSize - 5; // top-right corner
+            int iconY = drawY + 5;
+            ofSetColor(255); // Full white, fully opaque
+            videoIcon.draw(iconX, iconY, iconSize, iconSize);
+        }
+
+        std::string colorString = getLuminanceGroupNames().at(media.luminanceGroup) +
             " luminance (" + std::to_string(media.averageLuminance) + ")";
         ofDrawBitmapString(colorString, drawX, drawY - 10);
 

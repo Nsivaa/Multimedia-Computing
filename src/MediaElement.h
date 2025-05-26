@@ -1,18 +1,11 @@
 #pragma once
 #include "ofMain.h"
-
-enum LuminanceGroup { LOW, MEDIUM, HIGH };
-std::map<LuminanceGroup, string> luminanceGroupNames = {
-	{ LOW, "Low" },
-	{ MEDIUM, "Medium" },
-	{ HIGH, "High" }
-};
+#include "utils.h"
 
 class MediaElement {
 	// The MediaElement class is used to handle both videos and images in the gallery. 
 	// The "image" field will contain the thumbnail of the video if the element is a video, 
 	// otherwise the image itself (and the path  to the video will be null). 
-
 
 public:
 	

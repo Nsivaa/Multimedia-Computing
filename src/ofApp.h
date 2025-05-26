@@ -1,5 +1,6 @@
 #include "ofMain.h"
 #include "MediaElement.h" 
+#include "utils.h"
 
 class ofApp : public ofBaseApp {
 
@@ -10,7 +11,6 @@ public:
 	void draw();
 	void drawSelectedMediaFullscreen();
 	void drawLegend();
-
 	void keyPressed(int key);
 	void keyReleased(int key);
 	void mouseMoved(int x, int y);
@@ -28,9 +28,11 @@ public:
 
 	ofDirectory dir;
 	std::vector<MediaElement> medias;
+	ofImage videoIcon;
 
 	int currentMedia = 0;
-	int margin = 20;
+	int margin = 20;            
+	int iconSize = 24;
 
 	MediaElement* currentVideoPlaying = nullptr;
 	bool fullscreenMode = false;
