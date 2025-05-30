@@ -224,101 +224,112 @@ void ofApp::drawLegend() {
 void ofApp::keyPressed(int key) {
     switch (key) {
 
-    case(OF_KEY_RIGHT):
+        case(OF_KEY_RIGHT):
 
-        currentMedia++;
-        if (currentMedia >= medias.size()) {
-            currentMedia = 0;
-        }
-        if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
-            currentVideoPlaying->videoPlayer.stop(); // Reset
-            currentVideoPlaying = nullptr;
-        }
-        break;
+            currentMedia++;
+            if (currentMedia >= medias.size()) {
+                currentMedia = 0;
+            }
+            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
+                currentVideoPlaying->videoPlayer.stop(); // Reset
+                currentVideoPlaying = nullptr;
+            }
+            break;
 
-    case(OF_KEY_LEFT):
-        currentMedia--;
+        case(OF_KEY_LEFT):
+            currentMedia--;
 
-        if (currentMedia < 0) {
-            currentMedia = medias.size() - 1;
-        }
-        if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
-            currentVideoPlaying->videoPlayer.stop(); // Reset
-            currentVideoPlaying = nullptr;
-        }
-        break;
-    case(OF_KEY_UP):
-		// Select media up one row
-        currentMedia -= (ofGetWidth() / (standardImageSize.first + margin));
-        if (currentMedia < 0) {
-            currentMedia = 0;
-        }
-		break;
-	case(OF_KEY_DOWN):
-        // Select media down one row
-        currentMedia += (ofGetWidth() / (standardImageSize.first + margin));
-        if (currentMedia >= medias.size()) {
-            currentMedia = medias.size() - 1;
-		}
-        break;
-    case('f'): //toggles full screen 
-        if (!fullscreenMode) {
-            drawSelectedMediaFullscreen();
-            fullscreenMode = true;
-        }
-        else {
-            fullscreenMode = false;
-            ofSetFullscreen(false);
-            ofSetWindowShape(prevScreenSize.first, prevScreenSize.second);
-        }
-        break;
+            if (currentMedia < 0) {
+                currentMedia = medias.size() - 1;
+            }
+            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
+                currentVideoPlaying->videoPlayer.stop(); // Reset
+                currentVideoPlaying = nullptr;
+            }
+            break;
 
-    case(' '): // Play/pause the video
-        if (medias[currentMedia].isVideo()) {
-            MediaElement& media = medias[currentMedia];
+        case(OF_KEY_UP):
+		    // Select media up one row
+            currentMedia -= (ofGetWidth() / (standardImageSize.first + margin));
+            if (currentMedia < 0) {
+                currentMedia = 0;
+            }
+            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
+                currentVideoPlaying->videoPlayer.stop(); // Reset
+                currentVideoPlaying = nullptr;
+            }
+		    break;
 
-            if (!media.videoPlayer.isLoaded()) {
-                media.videoPlayer.setPixelFormat(OF_PIXELS_RGB);
-                media.videoPlayer.load(media.videoPath);
-                media.videoPlayer.setLoopState(OF_LOOP_NORMAL);
-                media.videoPlayer.play();
-                media.isPaused = false;
+	    case(OF_KEY_DOWN):
+            // Select media down one row
+            currentMedia += (ofGetWidth() / (standardImageSize.first + margin));
+            if (currentMedia >= medias.size()) {
+                currentMedia = medias.size() - 1;
+		    }
+            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
+                currentVideoPlaying->videoPlayer.stop(); // Reset
+                currentVideoPlaying = nullptr;
+            }
+            break;
+
+        case('f'): //toggles full screen 
+            if (!fullscreenMode) {
+                drawSelectedMediaFullscreen();
+                fullscreenMode = true;
             }
             else {
-                if (media.isPaused) {
-                    media.videoPlayer.setPaused(false);
+                fullscreenMode = false;
+                ofSetFullscreen(false);
+                ofSetWindowShape(prevScreenSize.first, prevScreenSize.second);
+            }
+            break;
+
+        case(' '): // Play/pause the video
+            if (medias[currentMedia].isVideo()) {
+                MediaElement& media = medias[currentMedia];
+
+                if (!media.videoPlayer.isLoaded()) {
+                    media.videoPlayer.setPixelFormat(OF_PIXELS_RGB);
+                    media.videoPlayer.load(media.videoPath);
+                    media.videoPlayer.setLoopState(OF_LOOP_NORMAL);
+                    media.videoPlayer.play();
                     media.isPaused = false;
                 }
                 else {
-                    media.videoPlayer.setPaused(true);
-                    media.isPaused = true;
+                    if (media.isPaused) {
+                        media.videoPlayer.setPaused(false);
+                        media.isPaused = false;
+                    }
+                    else {
+                        media.videoPlayer.setPaused(true);
+                        media.isPaused = true;
+                    }
                 }
+
+                currentVideoPlaying = &media;
             }
+            break;
 
-            currentVideoPlaying = &media;
+        case('e'): // show/hide edge histogram
+            showEdgeHist = !showEdgeHist;
+            break;
+
+        case('c'): // show dominant color contour
+            showDominantColor = !showDominantColor;
+            break;
+
+        case('l'): // show luminance map
+            showLuminanceMap = !showLuminanceMap;
+            break;
+
+        case('r'): // show RGB histogram
+            showRGBHist = !showRGBHist;
+            break;
+
+	    case('h'): // show/hide legend
+            showLegend = !showLegend;
+            break;
         }
-        break;
-
-    case('e'): // show/hide edge histogram
-        showEdgeHist = !showEdgeHist;
-        break;
-
-    case('c'): // show dominant color contour
-        showDominantColor = !showDominantColor;
-        break;
-
-    case('l'): // show luminance map
-        showLuminanceMap = !showLuminanceMap;
-        break;
-
-    case('r'): // show RGB histogram
-        showRGBHist = !showRGBHist;
-        break;
-
-	case('h'): // show/hide legend
-        showLegend = !showLegend;
-        break;
-    }
 }
 
 //--------------------------------------------------------------
