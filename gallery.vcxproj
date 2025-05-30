@@ -104,6 +104,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FeatureHandler.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="src\MediaElement.cpp" />
@@ -126,6 +127,7 @@
     <ClCompile Include="..\..\..\addons\ofxOpenCv\src\ofxCvShortImage.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FeatureHandler.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\MediaElement.h" />
     <ClInclude Include="..\..\..\addons\ofxGui\src\ofxBaseGui.h" />

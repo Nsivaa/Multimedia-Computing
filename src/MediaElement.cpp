@@ -63,7 +63,7 @@ void MediaElement::computeEdgeMap() {
     // 2. Use Sobel filter (via ofxCv) to compute edges
     cv::Mat grayMat = cv::cvarrToMat(grayImg.getCvImage());
     cv::Mat edges;
-    cv::Canny(grayMat, edges, 50, 150);  // You can tweak thresholds
+    cv::Canny(grayMat, edges, 50, 150);  // thresholds
 
     edgeImg.setFromPixels(edges.data, edges.cols, edges.rows);
 
@@ -92,7 +92,7 @@ void MediaElement::computeEdgeMap() {
         }
     }
 
-    // 4. Normalize (optional)
+    // 4. Normalize 
     float maxCount = *max_element(histogram.begin(), histogram.end());
     if (maxCount > 0) {
         for (auto& h : histogram) {

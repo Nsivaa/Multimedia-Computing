@@ -29,6 +29,7 @@ public:
 	void computeDominantColor();
 	void computeLuminanceMap();
 	void computeAverageLuminance();
+
 	// DRAWER METHODS 
 
 	void drawImage(int x, int y) const { image.draw(x, y); };
