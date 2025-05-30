@@ -28,6 +28,7 @@ void ofApp::setup() {
         else if (extension == "mp4") {
             media = MediaElement(filePath);
         }
+
         else {
             continue; // Skip unsupported formats
         }

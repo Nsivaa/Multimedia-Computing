@@ -5,10 +5,10 @@
 #include <algorithm>
 
 void FeatureHandler::computeAllFeatures(MediaElement& element) {
-	if (!element.image.isAllocated()) return;
     if (element.isVideo()) {
         generateThumbnail(element, 300, 300);
 	}
+    if (!element.image.isAllocated()) return;
     computeNormalizedRGBHistogram(element);
     computeEdgeMap(element);
     computeDominantColor(element);
