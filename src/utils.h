@@ -14,7 +14,6 @@ inline const std::map<LuminanceGroup, std::string>& getLuminanceGroupNames() {
     return names;
 }
 
-enum FeatureType {
-    COLOR, TEXTURE, LUMINANCE, RGBHISTOGRAM, EDGE
-};
+enum FeatureType { RGBHISTOGRAM, COLOR, LUMINANCE, EDGE, TEXTURE };
+
 

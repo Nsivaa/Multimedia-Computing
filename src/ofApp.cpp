@@ -5,39 +5,40 @@ void ofApp::setup() {
     dir.listDir("images/of_logos/"); // Media directory
     dir.allowExt("jpg");
     dir.allowExt("mp4");
+
     if (!videoIcon.load("video_icon.png")) {
         ofLogError() << "Failed to load video_icon.png";
     }
-    ofSetVerticalSync(true);
 
-    // Helper lambda to process a media element (image or video)
-    auto processMedia = [&](MediaElement& media) {
-        media.computeNormalizedRGBHistogram();
-        media.computeEdgeMap();
-        media.computeDominantColor();
-        media.computeLuminanceMap();
-        media.assignLuminanceGroup();
-        medias.push_back(media);
-        };
+    ofSetVerticalSync(true);
+    ofBackground(ofColor::black);
+
+    FeatureHandler featureHandler; // Create a handler instance
 
     for (int i = 0; i < dir.size(); i++) {
         string filePath = dir.getPath(i);
         string extension = ofToLower(ofFilePath::getFileExt(filePath));
+        MediaElement media;
 
         if (extension == "jpg") {
             ofImage img;
             img.load(filePath);
-            MediaElement img_media(img, standardImageSize.first, standardImageSize.second);
-            processMedia(img_media);
+            media = MediaElement(img, standardImageSize.first, standardImageSize.second);
         }
         else if (extension == "mp4") {
-            MediaElement vid_media(filePath);
-            processMedia(vid_media);
+            media = MediaElement(filePath);
         }
-    }
+        else {
+            continue; // Skip unsupported formats
+        }
 
-    ofBackground(ofColor::black);
+        // Extract all relevant features using the handler
+        featureHandler.computeAllFeatures(media);
+
+        medias.push_back(media); // Store processed media
+    }
 }
+
 
 //--------------------------------------------------------------
 void ofApp::update() {

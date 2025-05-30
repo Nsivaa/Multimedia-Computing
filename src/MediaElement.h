@@ -14,21 +14,12 @@ public:
 	MediaElement() {};
 	MediaElement(ofImage img) : image(img) {};
 	MediaElement(ofImage img, int width, int height) : image(img) { image.resize(width, height); }; // resize the image to the given width and height
-	MediaElement(string path) : videoPath(path) { generateThumbnail(); }; // constructor for video elements
+	MediaElement(string path) : videoPath(path) {}; // constructor for video elements
 	
 	// MISC METHODS
 
 	bool isVideo() const { return !(this->videoPath.empty()); };
 	ofColor getHeatmapColor(float value); // Returns a color based on the luminance value for heatmap visualization
-	void assignLuminanceGroup(); // Assigns the luminance group based on the average luminance value
-
-	// PROCESSING METHODS
-	void generateThumbnail(int width = 300, int height = 300);
-	void computeNormalizedRGBHistogram();
-	void computeEdgeMap();
-	void computeDominantColor();
-	void computeLuminanceMap();
-	void computeAverageLuminance();
 
 	// DRAWER METHODS 
 

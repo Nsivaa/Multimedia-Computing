@@ -1,5 +1,6 @@
 #include "ofMain.h"
 #include "MediaElement.h" 
+#include "FeatureHandler.h"
 #include "utils.h"
 
 class ofApp : public ofBaseApp {
