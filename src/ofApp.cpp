@@ -61,7 +61,21 @@ void ofApp::draw() {
 
     for (auto& media : medias) {
         int drawX = x_pos;
-        int drawY = y_pos;
+        int drawY = y_pos - scrollOffsetY;
+        // Auto-scroll to make selected media visible
+        int selectedY = margin;
+        int selectedRow = currentMedia / (ofGetWidth() / (standardImageSize.first + margin));
+        selectedY += selectedRow * (standardImageSize.second + margin + 20);
+
+        int viewHeight = ofGetHeight();
+
+        // Ensure selected media is visible vertically
+        if (selectedY - scrollOffsetY < 0) {
+            scrollOffsetY = selectedY; // Scroll up
+        }
+        else if (selectedY - scrollOffsetY + standardImageSize.second > viewHeight) {
+            scrollOffsetY = selectedY - (viewHeight - standardImageSize.second - margin);
+		} // Scroll down
 
         // Draw image with optional dominant color contour
         if (&media == &medias[currentMedia]) {

@@ -136,8 +136,9 @@ void MediaElement::computeLuminanceMap() {
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
             ofColor color = pixels.getColor(x, y);
-            float luminance = color.getLightness(); 
-            // Normalize luminance to [0,1]
+			// Calculate luminance using the formula: Y = 0.2126 * R + 0.7152 * G + 0.0722 * B according to ITU-R BT.709 standard
+            float luminance = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+            // Normalize luminance 
             float normLum = ofClamp(luminance / 255.0f, 0.0f, 1.0f);
 
             // Convert to heatmap color
@@ -190,6 +191,8 @@ void MediaElement::assignLuminanceGroup() {
         luminanceGroup = HIGH;
     }
 }
+
+
 
 // -------------------------------------------------------------------------------------------------------------------------
 // DRAWER METHODS 
