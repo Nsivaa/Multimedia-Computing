@@ -14,6 +14,7 @@ void FeatureHandler::computeAllFeatures(MediaElement& element) {
     computeDominantColor(element);
     computeLuminanceMap(element);
     computeAverageLuminance(element);
+    computeTextureDescriptor(element);
 	assignLuminanceGroup(element);
     assignHueGroup(element);
 }
@@ -164,13 +165,38 @@ void FeatureHandler::computeAverageLuminance(MediaElement& element) {
     element.averageLuminance = totalLuminance / (pixels.getWidth() * pixels.getHeight());
 }
 
+void FeatureHandler::computeTextureDescriptor(MediaElement& element) {
+    if (!element.image.isAllocated()) return;
+
+    // Convert to grayscale
+    ofxCvGrayscaleImage grayImg;
+    grayImg.allocate(element.image.getWidth(), element.image.getHeight());
+    ofxCvColorImage colorImg;
+    colorImg.allocate(element.image.getWidth(), element.image.getHeight());
+    colorImg.setFromPixels(element.image.getPixels());
+    grayImg = colorImg;
+
+    // Convert to OpenCV Mat
+    cv::Mat grayMat = cv::cvarrToMat(grayImg.getCvImage());
+
+    // Apply Laplacian
+    cv::Mat laplacian;
+    cv::Laplacian(grayMat, laplacian, CV_64F);
+
+    // Compute variance of the Laplacian (texture strength)
+    cv::Scalar mean, stddev;
+    cv::meanStdDev(laplacian, mean, stddev);
+    element.textureVariance = stddev.val[0] * stddev.val[0]; // variance = stddev^2
+}
+
+
 void FeatureHandler::assignLuminanceGroup(MediaElement& element) {
     computeAverageLuminance(element);
     if (element.averageLuminance < 85) {
         element.luminanceGroup = LOW;
     }
     else if (element.averageLuminance < 170) {
-        element.luminanceGroup = MEDIUM;
+        element.luminanceGroup = LuminanceGroup::MEDIUM;
     }
     else {
         element.luminanceGroup = HIGH;
@@ -192,4 +218,16 @@ void FeatureHandler::assignHueGroup(MediaElement& element) {
    
 }
 
+void FeatureHandler::assignTextureGroup(MediaElement& element) {
+    float v = element.textureVariance;
+    if (v < 100.0f) {
+        element.textureGroup = SMOOTH_TEXTURE;
+    }
+    else if (v < 500.0f) {
+        element.textureGroup = MEDIUM_TEXTURE;
+    }
+    else {
+        element.textureGroup = COARSE_TEXTURE;
+    }
+}
 

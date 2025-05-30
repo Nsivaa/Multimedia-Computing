@@ -31,8 +31,9 @@ class FeatureHandler
 		void computeDominantColor(MediaElement& element);
 		void computeLuminanceMap(MediaElement& element);
 		void computeAverageLuminance(MediaElement& element);
-
+		void computeTextureDescriptor(MediaElement& element);
 		void assignLuminanceGroup(MediaElement& element); // Assigns the luminance group based on the average luminance value
 		void assignHueGroup(MediaElement& element); // Assigns the hue group based on the dominant color's hue value
+		void assignTextureGroup(MediaElement& element);
 };
 

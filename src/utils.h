@@ -26,3 +26,14 @@ inline const std::map<ColorGroup, std::string>& getColorGroupNames() {
     };
     return names;
 }
+
+enum TextureGroup { SMOOTH_TEXTURE, MEDIUM_TEXTURE, COARSE_TEXTURE };
+
+inline const std::map<TextureGroup, std::string>& getTextureGroupNames() {
+    static const std::map<TextureGroup, std::string> names = {
+        { SMOOTH_TEXTURE, "Smooth" },
+        { MEDIUM_TEXTURE, "Medium" },
+        { COARSE_TEXTURE, "Coarse" }
+    };
+    return names;
+}

@@ -91,7 +91,6 @@ void ofApp::draw() {
             media.drawImageWithContour(drawX, drawY, media.dominantColor);
 			ofDrawBitmapString(colorString, drawX + 5, drawY + media.image.getHeight() - 5); // Draw color group name
         }
-
         // Always draw color string if enabled
         if (showDominantColor) {
             ofDrawBitmapString(colorString, drawX + 5, drawY + media.image.getHeight() - 5);
