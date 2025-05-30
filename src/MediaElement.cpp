@@ -150,15 +150,20 @@ void MediaElement::computeLuminanceMap() {
 }
 
 void MediaElement::computeAverageLuminance() {
+    ofPixels& pixels = image.getPixels();
     float totalLuminance = 0;
-    for (int y = 0; y < luminanceMap.getHeight(); y++) {
-        for (int x = 0; x < luminanceMap.getWidth(); x++) {
-            ofColor color = luminanceMap.getColor(x, y);
-            totalLuminance += (color.r + color.g + color.b) / 3;
+
+    for (int y = 0; y < pixels.getHeight(); y++) {
+        for (int x = 0; x < pixels.getWidth(); x++) {
+            ofColor color = pixels.getColor(x, y);
+            float luminance = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+            totalLuminance += luminance;
         }
     }
-    averageLuminance = totalLuminance / (luminanceMap.getHeight() * luminanceMap.getWidth());
+
+    averageLuminance = totalLuminance / (pixels.getWidth() * pixels.getHeight());
 }
+
 
 ofColor MediaElement::getHeatmapColor(float value) {
     value = ofClamp(value, 0.0, 1.0);

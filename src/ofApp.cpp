@@ -75,7 +75,6 @@ void ofApp::draw() {
         }
         
 		if (media.isVideo()) { // Draw video icon if this is a video
-            int iconSize = 24;
             int iconX = drawX + media.image.getWidth() - iconSize - 5; // top-right corner
             int iconY = drawY + 5;
             ofSetColor(255); // Full white, fully opaque
