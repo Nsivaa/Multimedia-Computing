@@ -247,7 +247,20 @@ void ofApp::keyPressed(int key) {
             currentVideoPlaying = nullptr;
         }
         break;
-
+    case(OF_KEY_UP):
+		// Select media up one row
+        currentMedia -= (ofGetWidth() / (standardImageSize.first + margin));
+        if (currentMedia < 0) {
+            currentMedia = 0;
+        }
+		break;
+	case(OF_KEY_DOWN):
+        // Select media down one row
+        currentMedia += (ofGetWidth() / (standardImageSize.first + margin));
+        if (currentMedia >= medias.size()) {
+            currentMedia = medias.size() - 1;
+		}
+        break;
     case('f'): //toggles full screen 
         if (!fullscreenMode) {
             drawSelectedMediaFullscreen();
