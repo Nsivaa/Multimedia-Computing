@@ -16,4 +16,13 @@ inline const std::map<LuminanceGroup, std::string>& getLuminanceGroupNames() {
 
 enum FeatureType { RGBHISTOGRAM, COLOR, LUMINANCE, EDGE, TEXTURE };
 
+enum ColorGroup { RED, GREEN, BLUE };
 
+inline const std::map<ColorGroup, std::string>& getColorGroupNames() {
+    static const std::map<ColorGroup, std::string> names = {
+        { RED, "Red" },
+        { GREEN, "Green" },
+        { BLUE, "Blue" }
+    };
+    return names;
+}

@@ -62,6 +62,10 @@ void ofApp::draw() {
     int x_pos = margin, y_pos = margin;
 
     for (auto& media : medias) {
+        std::string luminanceString = getLuminanceGroupNames().at(media.luminanceGroup) +
+            " luminance (" + std::to_string(media.averageLuminance) + ")";
+        std:string colorString = getColorGroupNames().at(media.colorGroup) + " dominant color ";
+
         int drawX = x_pos;
         int drawY = y_pos - scrollOffsetY;
         // Auto-scroll to make selected media visible
@@ -85,6 +89,12 @@ void ofApp::draw() {
         }
         else if (showDominantColor) {
             media.drawImageWithContour(drawX, drawY, media.dominantColor);
+			ofDrawBitmapString(colorString, drawX + 5, drawY + media.image.getHeight() - 5); // Draw color group name
+        }
+
+        // Always draw color string if enabled
+        if (showDominantColor) {
+            ofDrawBitmapString(colorString, drawX + 5, drawY + media.image.getHeight() - 5);
         }
         else {
             media.drawImage(drawX, drawY);
@@ -97,9 +107,6 @@ void ofApp::draw() {
             videoIcon.draw(iconX, iconY, iconSize, iconSize);
         }
 
-        std::string colorString = getLuminanceGroupNames().at(media.luminanceGroup) +
-            " luminance (" + std::to_string(media.averageLuminance) + ")";
-        ofDrawBitmapString(colorString, drawX, drawY - 10);
 
         // Draw overlays using the same y base
         if (showEdgeHist) {
@@ -108,7 +115,9 @@ void ofApp::draw() {
 
         if (showLuminanceMap) {
             media.drawLuminanceMap(drawX, drawY);
-        }
+			ofDrawBitmapString(luminanceString, drawX, drawY - 10); // Draw luminance group name above the image
+		} 
+        
 
         if (showRGBHist) {
             int histW = 150;

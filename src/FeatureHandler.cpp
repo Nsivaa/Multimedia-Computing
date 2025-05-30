@@ -15,6 +15,7 @@ void FeatureHandler::computeAllFeatures(MediaElement& element) {
     computeLuminanceMap(element);
     computeAverageLuminance(element);
 	assignLuminanceGroup(element);
+    assignHueGroup(element);
 }
 
 
@@ -175,4 +176,20 @@ void FeatureHandler::assignLuminanceGroup(MediaElement& element) {
         element.luminanceGroup = HIGH;
     }
 }
+
+void FeatureHandler::assignHueGroup(MediaElement& element) {
+    float hue = element.dominantColor.getHueAngle(); // 0–360
+
+    if (hue < 60 || hue >= 300) {
+        element.colorGroup = RED; // Red-ish
+    }
+    else if (hue < 180) {
+        element.colorGroup = GREEN; // Green-ish
+    }
+    else {
+        element.colorGroup = BLUE; // Blue-ish
+    }
+   
+}
+
 
