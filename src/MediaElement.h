@@ -41,12 +41,13 @@ public:
 	LuminanceGroup luminanceGroup = LOW; // Grouping of luminance values into LOW, MEDIUM, HIGH
 	ColorGroup colorGroup = RED; // Grouping of colors into RED, GREEN, BLUE
 	TextureGroup textureGroup = SMOOTH_TEXTURE; // Grouping of textures into SMOOTH, MEDIUM, COARSE
+	RhythmGroup rhythmGroup = STATIC; // Grouping of rhythm into STATIC, MODERATE, FAST
 	std::vector<float> redHist, greenHist, blueHist;
 	std::vector<float> edgeHist; // Edge histogram
 	int edgeGridRows = 32;
 	int edgeGridCols = 32;
 	float averageLuminance = 0;
 	float textureVariance = 0.0f;
-
+	float rhythmMetric = 0.0f; // Metric for rhythm analysis
 };
 

@@ -7,6 +7,8 @@
 void FeatureHandler::computeAllFeatures(MediaElement& element) {
     if (element.isVideo()) {
         generateThumbnail(element, 300, 300);
+		computeRhythmMetric(element);
+        assignRhythmGroup(element);
 	}
     if (!element.image.isAllocated()) return;
     computeNormalizedRGBHistogram(element);
@@ -34,6 +36,34 @@ void FeatureHandler::generateThumbnail(MediaElement& element, int width, int hei
     catch (const std::exception& e) {
         std::cout << "Error generating thumbnail: " << e.what() << std::endl;
     }
+}
+
+void FeatureHandler::computeRhythmMetric(MediaElement& element) {
+    int frameStep = 2;
+    ofImage prevFrame, currentFrame;
+    float totalChange = 0.0;
+    int numComparisons = 0;
+	ofVideoPlayer& video = element.videoPlayer; 
+
+    for (int i = 0; i < video.getTotalNumFrames() - frameStep; i += frameStep) {
+        video.setFrame(i);
+        video.update();
+        prevFrame.setFromPixels(video.getPixels());
+
+        video.setFrame(i + frameStep);
+        video.update();
+        currentFrame.setFromPixels(video.getPixels());
+
+        // Resize both to smaller size (e.g., 64x64) to reduce noise
+        prevFrame.resize(64, 64);
+        currentFrame.resize(64, 64);
+
+        float diff = computeFrameDifference(prevFrame, currentFrame);
+        totalChange += diff;
+        numComparisons++;
+    }
+    float avgChange = totalChange / numComparisons;
+	element.rhythmMetric = avgChange;
 }
 
 void FeatureHandler::computeNormalizedRGBHistogram(MediaElement& element) {
@@ -231,3 +261,7 @@ void FeatureHandler::assignTextureGroup(MediaElement& element) {
     }
 }
 
+void FeatureHandler::assignRhythmGroup(MediaElement& element) {
+    RhythmGroup rhythm = getRhythmGroup(element.rhythmMetric);
+	element.rhythmGroup = rhythm;
+}
