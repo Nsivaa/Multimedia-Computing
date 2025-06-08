@@ -70,6 +70,9 @@
     <ClCompile Include="src\FeatureHandler.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\CameraHandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -2159,13 +2162,13 @@
     <ClInclude Include="..\..\..\addons\ofxOpenCv\libs\opencv\include\opencv4\opencv2\video.hpp">
       <Filter>addons\ofxOpenCv\libs\opencv\include\opencv4\opencv2</Filter>
     </ClInclude>
-    <ClInclude Include="utils.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\utils.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\FeatureHandler.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CameraHandler.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
