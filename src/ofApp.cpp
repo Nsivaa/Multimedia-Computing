@@ -10,8 +10,12 @@ void ofApp::setup() {
         ofLogError() << "Failed to load video_icon.png";
     }
 
+    ofSetFrameRate(60);
+    camera.setup(640, 480);
     ofSetVerticalSync(true);
     ofBackground(ofColor::black);
+    //ofEnableDepthTest();
+
 
     FeatureHandler featureHandler; // Create a handler instance
 
@@ -43,11 +47,22 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
+
+    camera.update();
+
+    if (camera.isFrameNew()) {
+        detectGesture();
+    }
+
+    if (movementCooldown > 0) {
+        movementCooldown--;
+    }
 	// if a video is playing, update it
     if (currentVideoPlaying && !currentVideoPlaying->isPaused) {
         currentVideoPlaying->videoPlayer.nextFrame();
 		currentVideoPlaying->videoPlayer.update();
 	}
+
 }
 
 //--------------------------------------------------------------
@@ -147,6 +162,56 @@ void ofApp::draw() {
     }
 
 }
+
+void ofApp::drawCarousel() {
+    float radius = 300;
+
+    for (int i = 0; i < medias.size(); i++) {
+        float angle = ofDegToRad(carouselAngle + i * angleStep);
+        float x = cos(angle) * radius;
+        float z = sin(angle) * radius;
+
+        ofPushMatrix();
+        ofTranslate(x, 0, z);
+        ofRotateYDeg(ofRadToDeg(-angle));
+        medias[i].image.draw(-100, -100, 200, 200);
+        ofPopMatrix();
+    }
+}
+
+void ofApp::detectGesture() {
+    const auto& diffImg = camera.getDiffImage();
+    int camWidth = camera.getWidth();
+    int camHeight = camera.getHeight();
+
+    int leftSum = 0;
+    int rightSum = 0;
+
+    int bandWidth = camWidth / 4;
+
+    for (int y = 0; y < camHeight; y++) {
+        for (int x = 0; x < camWidth; x++) {
+            if (diffImg.getPixels()[y * camWidth + x] > 200) {
+                if (x < bandWidth) leftSum++;
+                else if (x > camWidth - bandWidth) rightSum++;
+            }
+        }
+    }
+
+    int threshold = 5000;
+
+    if (movementCooldown == 0) {
+        if (leftSum > threshold) {
+            carouselAngle += angleStep;
+            movementCooldown = 20;
+        }
+        else if (rightSum > threshold) {
+            carouselAngle -= angleStep;
+            movementCooldown = 20;
+        }
+    }
+}
+
 
 void ofApp::drawSelectedMediaFullscreen() {
 

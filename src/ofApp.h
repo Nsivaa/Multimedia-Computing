@@ -2,6 +2,7 @@
 #include "MediaElement.h" 
 #include "FeatureHandler.h"
 #include "utils.h"
+#include "CameraHandler.h"
 
 class ofApp : public ofBaseApp {
 
@@ -27,6 +28,10 @@ public:
 	void setMargin(int margin);
 	void setImageIndex(int index);
 
+	void drawCarousel();
+	void detectGesture();
+
+	CameraHandler camera;
 	ofDirectory dir;
 	std::vector<MediaElement> medias;
 	ofImage videoIcon;
@@ -35,6 +40,9 @@ public:
 	int margin = 20;            
 	int iconSize = 24;
 	int scrollOffsetY = 0;  
+	float carouselAngle = 0.0;
+	float angleStep = 360.0 / 8;
+	int movementCooldown = 0;
 
 	MediaElement* currentVideoPlaying = nullptr;
 	bool fullscreenMode = false;
