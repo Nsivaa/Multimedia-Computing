@@ -1,6 +1,9 @@
 #include "MediaElement.h"
 #include "ofxOpenCv.h"
 
+void MediaElement::drawImage(int x, int y, int width, int height) const {
+    image.draw(x, y, width, height);
+}
 
 
 ofColor MediaElement::getHeatmapColor(float value) {
@@ -36,6 +39,21 @@ void MediaElement::drawImageWithContour(int x, int y, ofColor contourColor, int 
     ofSetColor(ofColor::white);
 }
 
+// overloaded method to draw image with contour at specific width and height
+void MediaElement::drawImageWithContour(int x, int y, int width, int height, ofColor contourColor, int thickness) const {
+    image.draw(x, y, width, height);
+
+    ofSetColor(contourColor);
+    ofNoFill();
+
+    for (int i = 0; i < thickness; i++) {
+        ofDrawRectangle(x - i, y - i, width + 2 * i, height + 2 * i);
+    }
+
+    ofSetColor(255);
+}
+
+
 void MediaElement::drawNormalizedRGBHistogram(int x, int y, int width, int height) const {
 
     const int numBins = (int)redHist.size(); // Assuming all histograms have same bin count
@@ -69,11 +87,12 @@ void MediaElement::drawNormalizedRGBHistogram(int x, int y, int width, int heigh
 
 
 void MediaElement::drawEdgeMap(int x, int y, int width, int height) const {
-    
     if (edgeHist.empty()) return;
+
 	int gridCols = this->edgeGridCols;
 	int gridRows = this->edgeGridRows;
     int totalCells = gridRows * gridCols;
+
     if (edgeHist.size() != totalCells) return;
 
     // Determine max value for normalization
@@ -111,12 +130,14 @@ void MediaElement::drawEdgeMap(int x, int y, int width, int height) const {
 
 }
 
-void MediaElement::drawLuminanceMap(int x, int y) const {
-    ofEnableAlphaBlending(); // Enable transparency
+void MediaElement::drawLuminanceMap(int x, int y, int width, int height) const {
+    if (!luminanceMap.isAllocated()) {
+        std::cout << "Luminance map not allocated!" << std::endl;
+    }
 
+    ofEnableAlphaBlending(); // Enable 
     ofSetColor(255, 255, 255, 120); // White with ~50% transparency
-    luminanceMap.draw(x, y);
-
+    luminanceMap.draw(x, y, width, height);
     ofSetColor(255); // Reset to opaque white
     ofDisableAlphaBlending();
 }

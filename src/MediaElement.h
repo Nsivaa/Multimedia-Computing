@@ -23,11 +23,12 @@ public:
 
 	// DRAWER METHODS 
 
-	void drawImage(int x, int y) const { image.draw(x, y); };
+	void drawImage(int x, int y, int width, int height) const;
 	void drawImageWithContour(int x, int y, ofColor contourColor = ofColor::white, int thickness = 5) const;
+	void drawImageWithContour(int x, int y, int width, int height, ofColor contourColor = ofColor::magenta, int thickness = 3) const;
 	void drawEdgeMap(int x, int y, int width, int height) const;
 	void drawNormalizedRGBHistogram(int x, int y, int width, int height) const;
-	void drawLuminanceMap(int x, int y) const;
+	void drawLuminanceMap(int x, int y, int width, int height) const;
 
 	// ATTRIBUTES
 
