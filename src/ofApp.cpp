@@ -52,87 +52,86 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-
     if (dir.size() < 1) return;
-    if (fullscreenMode){
+    if (fullscreenMode) {
         drawSelectedMediaFullscreen();
         return;
     }
-    
-    int x_pos = margin, y_pos = margin;
 
-    for (auto& media : medias) {
-        std::string luminanceString = getLuminanceGroupNames().at(media.luminanceGroup) +
-            " luminance (" + std::to_string(media.averageLuminance) + ")";
-        std:string colorString = getColorGroupNames().at(media.colorGroup) + " dominant color ";
+    int x_pos = margin - scrollOffsetX;
+    int y_pos = margin;
+
+    // Auto-scroll to make selected media visible
+    int selectedX = margin;
+    int selectedCol = currentMedia; // Since now it's 1 row
+    selectedX += selectedCol * (standardImageSize.first + margin);
+
+    int viewWidth = ofGetWidth();
+
+    if (selectedX - scrollOffsetX < 0) {
+        scrollOffsetX = selectedX; // Scroll left
+    }
+    else if (selectedX - scrollOffsetX + standardImageSize.first > viewWidth) {
+        scrollOffsetX = selectedX - (viewWidth - standardImageSize.first - margin); // Scroll right
+    }
+
+    for (int i = 0; i < medias.size(); ++i) {
+        auto& media = medias[i];
 
         int drawX = x_pos;
-        int drawY = y_pos - scrollOffsetY;
-        // Auto-scroll to make selected media visible
-        int selectedY = margin;
-        int selectedRow = currentMedia / (ofGetWidth() / (standardImageSize.first + margin));
-        selectedY += selectedRow * (standardImageSize.second + margin + 20);
+        int drawY = y_pos;
 
-        int viewHeight = ofGetHeight();
-
-        // Ensure selected media is visible vertically
-        if (selectedY - scrollOffsetY < 0) {
-            scrollOffsetY = selectedY; // Scroll up
+        // Skip drawing if the media is outside the visible window
+        if (drawX + standardImageSize.first < 0 || drawX > ofGetWidth()) {
+            x_pos += standardImageSize.first + margin;
+            continue;
         }
-        else if (selectedY - scrollOffsetY + standardImageSize.second > viewHeight) {
-            scrollOffsetY = selectedY - (viewHeight - standardImageSize.second - margin);
-		} // Scroll down
 
-        // Draw image with optional dominant color contour
+        std::string luminanceString = getLuminanceGroupNames().at(media.luminanceGroup) +
+            " luminance (" + std::to_string(media.averageLuminance) + ")";
+        std::string colorString = getColorGroupNames().at(media.colorGroup) + " dominant color ";
+
+        // Draw image
         if (&media == &medias[currentMedia]) {
             media.drawImageWithContour(drawX, drawY);
         }
         else if (showDominantColor) {
             media.drawImageWithContour(drawX, drawY, media.dominantColor);
-			ofDrawBitmapString(colorString, drawX + 5, drawY + media.image.getHeight() - 5); // Draw color group name
-        }
-        // Always draw color string if enabled
-        if (showDominantColor) {
-            ofDrawBitmapString(colorString, drawX + 5, drawY + media.image.getHeight() - 5);
         }
         else {
             media.drawImage(drawX, drawY);
         }
-        
-		if (media.isVideo()) { // Draw video icon if this is a video
-            int iconX = drawX + media.image.getWidth() - iconSize - 5; // top-right corner
+
+        if (showDominantColor) {
+            ofDrawBitmapString(colorString, drawX + 5, drawY + media.image.getHeight() - 5);
+        }
+
+        if (media.isVideo()) {
+            int iconX = drawX + media.image.getWidth() - iconSize - 5;
             int iconY = drawY + 5;
-            ofSetColor(255); // Full white, fully opaque
+            ofSetColor(255);
             videoIcon.draw(iconX, iconY, iconSize, iconSize);
         }
 
-
-        // Draw overlays using the same y base
         if (showEdgeHist) {
             media.drawEdgeMap(drawX, drawY, media.image.getWidth(), media.image.getHeight());
         }
 
         if (showLuminanceMap) {
             media.drawLuminanceMap(drawX, drawY);
-			ofDrawBitmapString(luminanceString, drawX, drawY - 10); // Draw luminance group name above the image
-		} 
-        
+            ofDrawBitmapString(luminanceString, drawX, drawY - 10);
+        }
 
         if (showRGBHist) {
             int histW = 150;
             int histH = 400;
-            int histX = drawX + 5; // 5 px padding from left edge of image
-            int histY = drawY + media.image.getHeight() - histH - 5; // 5 px padding from bottom edge of image
-            ofSetColor(255); // full opacity
+            int histX = drawX + 5;
+            int histY = drawY + media.image.getHeight() - histH - 5;
+            ofSetColor(255);
             media.drawNormalizedRGBHistogram(histX, histY + histH, histW, histH);
         }
 
-        // Move to next column or row
         x_pos += media.image.getWidth() + margin;
-        if (x_pos > ofGetWidth() - media.image.getWidth()) {
-            x_pos = margin;
-            y_pos += media.image.getHeight() + margin + 20; // 100 to leave space for histogram
-        }
     }
 
     if (showLegend) {
@@ -141,11 +140,10 @@ void ofApp::draw() {
     else {
         std::string hint = "Press 'h' to open legend";
         int x = 20;
-        int y = ofGetHeight() - 20; // 20 px from bottom
-        ofSetColor(255);            // White text
+        int y = ofGetHeight() - 20;
+        ofSetColor(255);
         ofDrawBitmapString(hint, x, y);
     }
-
 }
 
 void ofApp::drawSelectedMediaFullscreen() {
@@ -258,29 +256,6 @@ void ofApp::keyPressed(int key) {
             }
             break;
 
-        case(OF_KEY_UP):
-		    // Select media up one row
-            currentMedia -= (ofGetWidth() / (standardImageSize.first + margin));
-            if (currentMedia < 0) {
-                currentMedia = 0;
-            }
-            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
-                currentVideoPlaying->videoPlayer.stop(); // Reset
-                currentVideoPlaying = nullptr;
-            }
-		    break;
-
-	    case(OF_KEY_DOWN):
-            // Select media down one row
-            currentMedia += (ofGetWidth() / (standardImageSize.first + margin));
-            if (currentMedia >= medias.size()) {
-                currentMedia = medias.size() - 1;
-		    }
-            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
-                currentVideoPlaying->videoPlayer.stop(); // Reset
-                currentVideoPlaying = nullptr;
-            }
-            break;
 
         case('f'): //toggles full screen 
             if (!fullscreenMode) {

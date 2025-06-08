@@ -34,7 +34,7 @@ public:
 	int currentMedia = 0;
 	int margin = 20;            
 	int iconSize = 24;
-	int scrollOffsetY = 0;  
+	int scrollOffsetX = 0;  
 
 	MediaElement* currentVideoPlaying = nullptr;
 	bool fullscreenMode = false;
