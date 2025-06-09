@@ -13,6 +13,7 @@ public:
 	void draw();
 	void drawSelectedMediaFullscreen();
 	void drawLegend();
+	void ofApp::drawMediaXMLInfo(const MediaElement& media, int screenW, int screenH);
 	void keyPressed(int key);
 	void updateMediaMatrix();
 
@@ -37,6 +38,7 @@ public:
 	bool showLuminanceMap = false;
 	bool showRGBHist = false;
 	bool showLegend = false;
+	bool showInfoWindow = false;
 
 	bool groupByLuminance = false; 
 	bool groupByColor = false;

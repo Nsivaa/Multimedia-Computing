@@ -15,7 +15,7 @@ public:
 
 	MediaElement() {};
 	MediaElement(ofImage img) : image(img) {};
-	MediaElement(ofImage img, int width, int height) : image(img) { image.resize(width, height); }; // resize the image to the given width and height
+	MediaElement(ofImage img, int width, int height, string filePath) : image(img), filePath(filePath) { image.resize(width, height); }; // resize the image to the given width and height
 	MediaElement(string path) : videoPath(path) { isVideoFlag = true; }; // constructor for video elements
 	
 	// MISC METHODS
@@ -45,6 +45,7 @@ public:
 	ofImage image;
 	string videoPath = ""; // Path to the video file, empty if this is an image element
 	string filePath = ""; // Path to the image file, empty if this is a video element
+
 	// string xml_data;
 	ofColor dominantColor;
 	ofImage luminanceMap; // Heatmap-style luminance visualization

@@ -14,6 +14,7 @@ void ofApp::setup() {
     ofBackground(ofColor::black);
 
     FeatureHandler featureHandler; // Create a handler instance
+	updateMediaMatrix(); // Initialize media matrix
 
     for (int i = 0; i < dir.size(); i++) {
         string filePath = dir.getPath(i);
@@ -23,7 +24,7 @@ void ofApp::setup() {
         if (extension == "jpg") {
             ofImage img;
             img.load(filePath);
-            media = MediaElement(img, standardImageSize.first, standardImageSize.second);
+            media = MediaElement(img, standardImageSize.first, standardImageSize.second, filePath);
         }
         else if (extension == "mp4") {
             media = MediaElement(filePath);
@@ -223,6 +224,12 @@ void ofApp::draw() {
         ofSetColor(255);
         ofDrawBitmapString(hint, x, y);
     }
+	// Draw the currently selected media info box
+    if (showInfoWindow && current != nullptr) {
+        drawMediaXMLInfo(*current, ofGetWidth(), ofGetHeight());
+    }
+
+
 }
 
 
@@ -317,6 +324,7 @@ void ofApp::drawLegend() {
         "'1'           : Group by luminance",
         "'2'           : Group by dominant color",
         "'3'           : Group by texture level",
+		"'i'           : Toggle media metadata (XML) info window",
         "'h'           : Toggle this legend"
     };
 
@@ -338,13 +346,66 @@ void ofApp::drawLegend() {
         ofDrawBitmapString(line, x + padding, textY);
         textY += lineHeight;
     }
+
 }
+
+void ofApp::drawMediaXMLInfo(const MediaElement& media, int screenW, int screenH) {
+    // Adjusted position and size
+    int margin = 20;
+    int boxWidth = 400;
+    int boxHeight = 300;
+    int x = screenW - boxWidth - margin;
+    int y = margin;
+
+    ofPushStyle();
+
+    // Background
+    ofSetColor(0, 255); // semi-transparent black
+    ofDrawRectangle(x, y, boxWidth, boxHeight);
+
+    // Border
+    ofNoFill();
+    ofSetColor(255);
+    ofDrawRectangle(x, y, boxWidth, boxHeight);
+    ofFill();
+
+    // Title
+    float textX = x + 10;
+    float textY = y + 20;
+    float lineHeight = 14;
+    ofSetColor(255);
+    ofDrawBitmapString("Media Metadata (XML)", textX, textY);
+    textY += lineHeight * 2;
+
+    // Serialize XML to string
+    ofxXmlSettings xml;
+    media.saveToXML(xml, 0);
+    std::string xmlStr;
+    xml.copyXmlToString(xmlStr);
+
+    // Draw each line, clipped to boxWidth
+    std::istringstream iss(xmlStr);
+    std::string line;
+    int maxLineChars = (boxWidth - 20) / 7; // rough char fit estimate
+
+    while (std::getline(iss, line)) {
+        if (textY > y + boxHeight - 10) break;
+        if (line.size() > maxLineChars) line = line.substr(0, maxLineChars - 3) + "...";
+        ofDrawBitmapString(line, textX, textY);
+        textY += lineHeight;
+    }
+
+    ofPopStyle();
+}
+
+
+
 
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
     switch (key) {
-
+    
     case OF_KEY_RIGHT: {
         // Move to the next media in the current row
         if (selectedCol + 1 < mediaMatrix[selectedRow].size()) {
@@ -384,8 +445,11 @@ void ofApp::keyPressed(int key) {
     case OF_KEY_UP: {
         // Move to the previous row, wrapping around if necessary
         int originalRow = selectedRow;
+        int rowCount = mediaMatrix.size();
+
+        // Move up
         do {
-            selectedRow = (selectedRow - 1 + 3) % 3;
+            selectedRow = (selectedRow - 1 + rowCount) % rowCount;
         } while (mediaMatrix[selectedRow].empty() && selectedRow != originalRow);
 
         if (selectedCol >= mediaMatrix[selectedRow].size()) {
@@ -405,8 +469,11 @@ void ofApp::keyPressed(int key) {
     case OF_KEY_DOWN: {
         // Move to the next row, wrapping around if necessary
         int originalRow = selectedRow;
+        int rowCount = mediaMatrix.size();
+
+        // Move down
         do {
-            selectedRow = (selectedRow + 1) % 3;
+            selectedRow = (selectedRow + 1) % rowCount;
         } while (mediaMatrix[selectedRow].empty() && selectedRow != originalRow);
 
         if (selectedCol >= mediaMatrix[selectedRow].size()) {
@@ -422,8 +489,6 @@ void ofApp::keyPressed(int key) {
 
         break;
     }
-
-
 
     case('f'):
         fullscreenMode = !fullscreenMode;
@@ -475,6 +540,9 @@ void ofApp::keyPressed(int key) {
 
     case('h'): // show/hide legend
         showLegend = !showLegend; break;
+
+    case('i'): // show xml metadata
+        showInfoWindow = !showInfoWindow; break;
 
     case '1': groupByLuminance = !groupByLuminance;
         groupByColor = groupByTexture = false;

@@ -144,33 +144,6 @@ void MediaElement::saveToXML(ofxXmlSettings& xml, int index) const {
     xml.addValue("dominantColorG", dominantColor.g);
     xml.addValue("dominantColorB", dominantColor.b);
 
-    xml.addTag("redHist");
-    xml.pushTag("redHist");
-    for (int i = 0; i < redHist.size(); ++i) {
-        xml.addValue("bin", redHist[i]);
-    }
-    xml.popTag();
-
-    xml.addTag("greenHist");
-    xml.pushTag("greenHist");
-    for (int i = 0; i < greenHist.size(); ++i) {
-        xml.addValue("bin", greenHist[i]);
-    }
-    xml.popTag();
-
-    xml.addTag("blueHist");
-    xml.pushTag("blueHist");
-    for (int i = 0; i < blueHist.size(); ++i) {
-        xml.addValue("bin", blueHist[i]);
-    }
-    xml.popTag();
-
-    xml.addTag("edgeHist");
-    xml.pushTag("edgeHist");
-    for (int i = 0; i < edgeHist.size(); ++i) {
-        xml.addValue("bin", edgeHist[i]);
-    }
-    xml.popTag();
 
     xml.popTag(); // media
 }
@@ -198,42 +171,6 @@ void MediaElement::loadFromXML(ofxXmlSettings& xml, int index) {
     dominantColor.r = xml.getValue("dominantColorR", 0);
     dominantColor.g = xml.getValue("dominantColorG", 0);
     dominantColor.b = xml.getValue("dominantColorB", 0);
-
-    redHist.clear();
-    if (xml.pushTag("redHist")) {
-        int numBins = xml.getNumTags("bin");
-        for (int i = 0; i < numBins; ++i) {
-            redHist.push_back(xml.getValue("bin", 0.0f, i));
-        }
-        xml.popTag();
-    }
-
-    greenHist.clear();
-    if (xml.pushTag("greenHist")) {
-        int numBins = xml.getNumTags("bin");
-        for (int i = 0; i < numBins; ++i) {
-            greenHist.push_back(xml.getValue("bin", 0.0f, i));
-        }
-        xml.popTag();
-    }
-
-    blueHist.clear();
-    if (xml.pushTag("blueHist")) {
-        int numBins = xml.getNumTags("bin");
-        for (int i = 0; i < numBins; ++i) {
-            blueHist.push_back(xml.getValue("bin", 0.0f, i));
-        }
-        xml.popTag();
-    }
-
-    edgeHist.clear();
-    if (xml.pushTag("edgeHist")) {
-        int numBins = xml.getNumTags("bin");
-        for (int i = 0; i < numBins; ++i) {
-            edgeHist.push_back(xml.getValue("bin", 0.0f, i));
-        }
-        xml.popTag();
-    }
 
     xml.popTag(); // media
 }
