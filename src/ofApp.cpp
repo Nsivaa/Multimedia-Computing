@@ -232,144 +232,99 @@ void ofApp::drawLegend() {
 void ofApp::keyPressed(int key) {
     switch (key) {
 
-        case(OF_KEY_RIGHT):
+    case(OF_KEY_RIGHT):
 
-            currentMedia++;
-            if (currentMedia >= medias.size()) {
-                currentMedia = 0;
-            }
-            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
-                currentVideoPlaying->videoPlayer.stop(); // Reset
-                currentVideoPlaying = nullptr;
-            }
-            break;
+        currentMedia++;
+        if (currentMedia >= medias.size()) {
+            currentMedia = 0;
+        }
+        if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
+            currentVideoPlaying->videoPlayer.stop(); // Reset
+            currentVideoPlaying = nullptr;
+        }
+        break;
 
-        case(OF_KEY_LEFT):
-            currentMedia--;
+    case(OF_KEY_LEFT):
+        currentMedia--;
 
-            if (currentMedia < 0) {
-                currentMedia = medias.size() - 1;
-            }
-            if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
-                currentVideoPlaying->videoPlayer.stop(); // Reset
-                currentVideoPlaying = nullptr;
-            }
-            break;
+        if (currentMedia < 0) {
+            currentMedia = medias.size() - 1;
+        }
+        if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
+            currentVideoPlaying->videoPlayer.stop(); // Reset
+            currentVideoPlaying = nullptr;
+        }
+        break;
 
 
-        case('f'): //toggles full screen 
-            if (!fullscreenMode) {
-                drawSelectedMediaFullscreen();
-                fullscreenMode = true;
+    case('f'): //toggles full screen 
+        if (!fullscreenMode) {
+            drawSelectedMediaFullscreen();
+            fullscreenMode = true;
+        }
+        else {
+            fullscreenMode = false;
+            ofSetFullscreen(false);
+            ofSetWindowShape(prevScreenSize.first, prevScreenSize.second);
+        }
+        break;
+
+    case(' '): // Play/pause the video
+        if (medias[currentMedia].isVideo()) {
+            MediaElement& media = medias[currentMedia];
+
+            if (!media.videoPlayer.isLoaded()) {
+                media.videoPlayer.setPixelFormat(OF_PIXELS_RGB);
+                media.videoPlayer.load(media.videoPath);
+                media.videoPlayer.setLoopState(OF_LOOP_NORMAL);
+                media.videoPlayer.play();
+                media.isPaused = false;
             }
             else {
-                fullscreenMode = false;
-                ofSetFullscreen(false);
-                ofSetWindowShape(prevScreenSize.first, prevScreenSize.second);
-            }
-            break;
-
-        case(' '): // Play/pause the video
-            if (medias[currentMedia].isVideo()) {
-                MediaElement& media = medias[currentMedia];
-
-                if (!media.videoPlayer.isLoaded()) {
-                    media.videoPlayer.setPixelFormat(OF_PIXELS_RGB);
-                    media.videoPlayer.load(media.videoPath);
-                    media.videoPlayer.setLoopState(OF_LOOP_NORMAL);
-                    media.videoPlayer.play();
+                if (media.isPaused) {
+                    media.videoPlayer.setPaused(false);
                     media.isPaused = false;
                 }
                 else {
-                    if (media.isPaused) {
-                        media.videoPlayer.setPaused(false);
-                        media.isPaused = false;
-                    }
-                    else {
-                        media.videoPlayer.setPaused(true);
-                        media.isPaused = true;
-                    }
+                    media.videoPlayer.setPaused(true);
+                    media.isPaused = true;
                 }
-
-                currentVideoPlaying = &media;
             }
-            break;
 
-        case('e'): // show/hide edge histogram
-            showEdgeHist = !showEdgeHist;
-            break;
-
-        case('c'): // show dominant color contour
-            showDominantColor = !showDominantColor;
-            break;
-
-        case('l'): // show luminance map
-            showLuminanceMap = !showLuminanceMap;
-            break;
-
-        case('r'): // show RGB histogram
-            showRGBHist = !showRGBHist;
-            break;
-
-	    case('h'): // show/hide legend
-            showLegend = !showLegend;
-            break;
+            currentVideoPlaying = &media;
         }
-}
+        break;
 
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key) {
+    case('e'): // show/hide edge histogram
+        showEdgeHist = !showEdgeHist;
+        break;
 
-}
+    case('c'): // show dominant color contour
+        showDominantColor = !showDominantColor;
+        break;
 
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y) {
+    case('l'): // show luminance map
+        showLuminanceMap = !showLuminanceMap;
+        break;
 
-}
+    case('r'): // show RGB histogram
+        showRGBHist = !showRGBHist;
+        break;
 
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button) {
+    case('h'): // show/hide legend
+        showLegend = !showLegend;
+        break;
 
-}
+    case('1'): // group by luminance
+        luminanceGrouping = !luminanceGrouping; // Toggle grouping 
+        break;
 
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button) {
+    case('2'): // group by color
+        colorGrouping = !colorGrouping; // Toggle grouping
+        break;
 
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg) {
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo) {
-
-}
-
-void ofApp::setMargin(int margin) {
-	this->margin = margin;
-}
-
-void ofApp::setImageIndex(int index) {
+    case('3'): // group by textures
+        textureGrouping = !textureGrouping; // Toggle grouping
+        break;
+    }
 }
