@@ -37,3 +37,11 @@ inline const std::map<TextureGroup, std::string>& getTextureGroupNames() {
     };
     return names;
 }
+
+enum RhythmGroup { STATIC, MODERATE, FAST };
+
+RhythmGroup getRhythmGroup(float score) {
+    if (score < 10.0f) return STATIC;
+    if (score < 30.0f) return MODERATE;
+    return FAST;
+}

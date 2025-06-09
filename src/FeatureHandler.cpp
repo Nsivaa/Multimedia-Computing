@@ -6,7 +6,9 @@
 
 void FeatureHandler::computeAllFeatures(MediaElement& element) {
     if (element.isVideo()) {
-        generateThumbnail(element, 300, 300);
+        generateThumbnail(element, 280, 280);
+		computeRhythmMetric(element);
+        assignRhythmGroup(element);
 	}
     if (!element.image.isAllocated()) return;
     computeNormalizedRGBHistogram(element);
@@ -17,6 +19,7 @@ void FeatureHandler::computeAllFeatures(MediaElement& element) {
     computeTextureDescriptor(element);
 	assignLuminanceGroup(element);
     assignHueGroup(element);
+	assignTextureGroup(element);
 }
 
 
@@ -35,6 +38,60 @@ void FeatureHandler::generateThumbnail(MediaElement& element, int width, int hei
         std::cout << "Error generating thumbnail: " << e.what() << std::endl;
     }
 }
+
+void FeatureHandler::computeRhythmMetric(MediaElement& element) {
+    int frameStep = 2;
+    ofImage prevFrame, currentFrame;
+    float totalChange = 0.0;
+    int numComparisons = 0;
+    ofVideoPlayer& video = element.videoPlayer;
+
+    if (!video.isLoaded()) {
+        video.load(element.videoPath);
+        // Wait for first frame to be ready
+        while (!video.isFrameNew()) {
+            video.update();
+        }
+    }
+    int totalFrames = video.getTotalNumFrames();
+
+    ofLog() << "computeRhythmMetric called, totalFrames: " << totalFrames;
+
+    if (!video.isLoaded()) {
+        ofLogWarning() << "Video is not loaded yet.";
+        element.rhythmMetric = 0.0f;
+        return;
+    }
+
+    if (totalFrames <= frameStep) {
+        ofLogWarning() << "Not enough frames to compute rhythm metric.";
+        element.rhythmMetric = 0.0f;
+        return;
+    }
+
+    for (int i = 0; i < totalFrames - frameStep; i += frameStep) {
+        video.setFrame(i);
+        video.update();
+        prevFrame.setFromPixels(video.getPixels());
+
+        video.setFrame(i + frameStep);
+        video.update();
+        currentFrame.setFromPixels(video.getPixels());
+
+        prevFrame.resize(64, 64);
+        currentFrame.resize(64, 64);
+
+        float diff = computeFrameDifference(prevFrame, currentFrame);
+        totalChange += diff;
+        numComparisons++;
+    }
+
+    float avgChange = (numComparisons > 0) ? totalChange / numComparisons : 0.0f;
+    element.rhythmMetric = avgChange;
+
+    ofLog() << "Rhythm metric computed: " << avgChange;
+}
+
 
 void FeatureHandler::computeNormalizedRGBHistogram(MediaElement& element) {
     ofPixels pixels = element.image.getPixels();
@@ -64,13 +121,16 @@ void FeatureHandler::computeEdgeMap(MediaElement& element) {
     int gridX = element.edgeGridCols;
     int gridY = element.edgeGridRows;
     std::vector<float> histogram(gridX * gridY, 0.0f);
+
     ofImage img = element.image;
+    int width = img.getWidth();
+    int height = img.getHeight();
 
     ofxCvColorImage colorImg;
     ofxCvGrayscaleImage grayImg, edgeImg;
-    colorImg.allocate(img.getWidth(), img.getHeight());
-    grayImg.allocate(img.getWidth(), img.getHeight());
-    edgeImg.allocate(img.getWidth(), img.getHeight());
+    colorImg.allocate(width, height);
+    grayImg.allocate(width, height);
+    edgeImg.allocate(width, height);
 
     colorImg.setFromPixels(img.getPixels());
     grayImg = colorImg;
@@ -81,27 +141,19 @@ void FeatureHandler::computeEdgeMap(MediaElement& element) {
 
     edgeImg.setFromPixels(edges.data, edges.cols, edges.rows);
 
-    int cellW = img.getWidth() / gridX;
-    int cellH = img.getHeight() / gridY;
-
-    for (int y = 0; y < gridY; y++) {
-        for (int x = 0; x < gridX; x++) {
-            int count = 0;
-            for (int j = 0; j < cellH; j++) {
-                for (int i = 0; i < cellW; i++) {
-                    int px = x * cellW + i;
-                    int py = y * cellH + j;
-                    if (px < img.getWidth() && py < img.getHeight()) {
-                        if (edgeImg.getPixels()[py * img.getWidth() + px] > 0) {
-                            count++;
-                        }
-                    }
-                }
+    // Accumulate by pixel
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            if (edgeImg.getPixels()[y * width + x] > 0) {
+                int gridCol = x * gridX / width;
+                int gridRow = y * gridY / height;
+                int index = gridRow * gridX + gridCol;
+                histogram[index]++;
             }
-            histogram[y * gridX + x] = count;
         }
     }
 
+    // Normalize
     float maxCount = *std::max_element(histogram.begin(), histogram.end());
     if (maxCount > 0) {
         for (auto& h : histogram) {
@@ -111,6 +163,7 @@ void FeatureHandler::computeEdgeMap(MediaElement& element) {
 
     element.edgeHist = histogram;
 }
+
 
 void FeatureHandler::computeDominantColor(MediaElement& element) {
     if (!element.image.isAllocated()) return;
@@ -231,3 +284,7 @@ void FeatureHandler::assignTextureGroup(MediaElement& element) {
     }
 }
 
+void FeatureHandler::assignRhythmGroup(MediaElement& element) {
+    RhythmGroup rhythm = getRhythmGroup(element.rhythmMetric);
+	element.rhythmGroup = rhythm;
+}

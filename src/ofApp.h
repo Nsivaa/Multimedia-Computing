@@ -3,6 +3,7 @@
 #include "FeatureHandler.h"
 #include "utils.h"
 
+
 class ofApp : public ofBaseApp {
 
 public:
@@ -12,29 +13,23 @@ public:
 	void draw();
 	void drawSelectedMediaFullscreen();
 	void drawLegend();
+	void ofApp::drawMediaXMLInfo(const MediaElement& media, int screenW, int screenH);
 	void keyPressed(int key);
-	void keyReleased(int key);
-	void mouseMoved(int x, int y);
-	void mouseDragged(int x, int y, int button);
-	void mousePressed(int x, int y, int button);
-	void mouseReleased(int x, int y, int button);
-	void mouseEntered(int x, int y);
-	void mouseExited(int x, int y);
-	void windowResized(int w, int h);
-	void dragEvent(ofDragInfo dragInfo);
-	void gotMessage(ofMessage msg);
-
-	void setMargin(int margin);
-	void setImageIndex(int index);
+	void updateMediaMatrix();
 
 	ofDirectory dir;
 	std::vector<MediaElement> medias;
+	std::vector<std::vector<MediaElement*>> mediaMatrix;
+
 	ofImage videoIcon;
 
 	int currentMedia = 0;
 	int margin = 20;            
 	int iconSize = 24;
-	int scrollOffsetY = 0;  
+	int scrollOffsetX = 0;  
+	int selectedRow = 0;
+	int selectedCol = 0;
+
 
 	MediaElement* currentVideoPlaying = nullptr;
 	bool fullscreenMode = false;
@@ -43,7 +38,12 @@ public:
 	bool showLuminanceMap = false;
 	bool showRGBHist = false;
 	bool showLegend = false;
+	bool showInfoWindow = false;
+
+	bool groupByLuminance = false; 
+	bool groupByColor = false;
+	bool groupByTexture = false;
 
 	std::pair<int, int> prevScreenSize = { 1024, 768 }; // to restore screen size when exiting fullscreen
-	std::pair<int, int> standardImageSize = { 300, 300 }; // standard image size for the application
+	std::pair<int, int> standardImageSize = { 280, 280 }; // standard image size for the application
 };

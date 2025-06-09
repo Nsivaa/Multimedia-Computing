@@ -13,7 +13,15 @@ class FeatureHandler
 		int compareFeatures(const MediaElement& element1, const MediaElement& element2, FeatureType feature);
 		void generateThumbnail(MediaElement& element, int width = 300, int height = 300);
 
-		float histogramDistance(const MediaElement& el1, const MediaElement& el2) const {
+		float computeColorDistance(const ofColor& a, const ofColor& b) {
+			float dr = float(a.r) - float(b.r);
+			float dg = float(a.g) - float(b.g);
+			float db = float(a.b) - float(b.b);
+			return sqrt(dr * dr + dg * dg + db * db);
+		}
+
+
+		float computeHistogramDistance(const MediaElement& el1, const MediaElement& el2) const {
 			// Use Euclidean distance between concatenated RGB histograms
 			float dist = 0.0f;
 			for (size_t i = 0; i < el1.redHist.size(); i++) {
@@ -25,6 +33,21 @@ class FeatureHandler
 			return sqrt(dist);
 		}
 
+		float computeFrameDifference(const ofImage& a, const ofImage& b) {
+			float sum = 0.0f;
+
+			for (int y = 0; y < a.getHeight(); ++y) {
+				for (int x = 0; x < a.getWidth(); ++x) {
+					ofColor colorA = a.getColor(x, y);
+					ofColor colorB = b.getColor(x, y);
+					float diff = computeColorDistance(colorA, colorB);
+					sum += diff;
+				}
+			}
+			return sum / (a.getWidth() * a.getHeight());
+		}
+
+
 		// Feature extraction methods
 		void computeNormalizedRGBHistogram(MediaElement& element);
 		void computeEdgeMap(MediaElement& element);
@@ -35,5 +58,7 @@ class FeatureHandler
 		void assignLuminanceGroup(MediaElement& element); // Assigns the luminance group based on the average luminance value
 		void assignHueGroup(MediaElement& element); // Assigns the hue group based on the dominant color's hue value
 		void assignTextureGroup(MediaElement& element);
+		void computeRhythmMetric(MediaElement& element);
+		void assignRhythmGroup(MediaElement& element); // Assigns the rhythm group based on the rhythm metric value
 };
 
