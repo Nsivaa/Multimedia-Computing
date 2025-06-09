@@ -59,6 +59,42 @@ void ofApp::draw() {
         return;
     }
 
+    std::string groupingInfo;
+
+    if (groupByLuminance) {
+        auto luminanceNames = getLuminanceGroupNames();
+        groupingInfo = "Luminance grouping active: rows represent ";
+        int count = 0;
+        for (auto& pair : luminanceNames) {
+            groupingInfo += pair.second;
+            if (++count < luminanceNames.size()) groupingInfo += ", ";
+        }
+    }
+    else if (groupByColor) {
+        auto colorNames = getColorGroupNames();
+        groupingInfo = "Color grouping active: rows represent ";
+        int count = 0;
+        for (auto& pair : colorNames) {
+            groupingInfo += pair.second;
+            if (++count < colorNames.size()) groupingInfo += ", ";
+        }
+    }
+    else if (groupByTexture) {
+        auto textureNames = getTextureGroupNames();
+        groupingInfo = "Texture grouping active: rows represent ";
+        int count = 0;
+        for (auto& pair : textureNames) {
+            groupingInfo += pair.second;
+            if (++count < textureNames.size()) groupingInfo += ", ";
+        }
+    }
+    else {
+        groupingInfo = "No grouping active: all media in one row";
+    }
+
+    ofSetColor(255);
+    ofDrawBitmapStringHighlight(groupingInfo, 10, 20);  // Draw at the top-left corner
+
     bool groupingActive = groupByLuminance || groupByColor || groupByTexture;
 
     // Build grouped matrix
@@ -158,7 +194,7 @@ void ofApp::draw() {
             }
 
             if (showEdgeHist) {
-                media->drawEdgeMap(drawX, drawY, media->image.getWidth(), media->image.getHeight());
+                media->drawEdgeMap(drawX, drawY, standardImageSize.first, standardImageSize.second);
             }
 
             if (showLuminanceMap) {

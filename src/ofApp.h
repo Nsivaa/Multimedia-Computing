@@ -43,5 +43,5 @@ public:
 	bool groupByTexture = false;
 
 	std::pair<int, int> prevScreenSize = { 1024, 768 }; // to restore screen size when exiting fullscreen
-	std::pair<int, int> standardImageSize = { 300, 300 }; // standard image size for the application
+	std::pair<int, int> standardImageSize = { 280, 280 }; // standard image size for the application
 };

@@ -6,7 +6,7 @@
 
 void FeatureHandler::computeAllFeatures(MediaElement& element) {
     if (element.isVideo()) {
-        generateThumbnail(element, 300, 300);
+        generateThumbnail(element, 280, 280);
 		computeRhythmMetric(element);
         assignRhythmGroup(element);
 	}
@@ -19,6 +19,7 @@ void FeatureHandler::computeAllFeatures(MediaElement& element) {
     computeTextureDescriptor(element);
 	assignLuminanceGroup(element);
     assignHueGroup(element);
+	assignTextureGroup(element);
 }
 
 
@@ -94,13 +95,16 @@ void FeatureHandler::computeEdgeMap(MediaElement& element) {
     int gridX = element.edgeGridCols;
     int gridY = element.edgeGridRows;
     std::vector<float> histogram(gridX * gridY, 0.0f);
+
     ofImage img = element.image;
+    int width = img.getWidth();
+    int height = img.getHeight();
 
     ofxCvColorImage colorImg;
     ofxCvGrayscaleImage grayImg, edgeImg;
-    colorImg.allocate(img.getWidth(), img.getHeight());
-    grayImg.allocate(img.getWidth(), img.getHeight());
-    edgeImg.allocate(img.getWidth(), img.getHeight());
+    colorImg.allocate(width, height);
+    grayImg.allocate(width, height);
+    edgeImg.allocate(width, height);
 
     colorImg.setFromPixels(img.getPixels());
     grayImg = colorImg;
@@ -111,27 +115,19 @@ void FeatureHandler::computeEdgeMap(MediaElement& element) {
 
     edgeImg.setFromPixels(edges.data, edges.cols, edges.rows);
 
-    int cellW = img.getWidth() / gridX;
-    int cellH = img.getHeight() / gridY;
-
-    for (int y = 0; y < gridY; y++) {
-        for (int x = 0; x < gridX; x++) {
-            int count = 0;
-            for (int j = 0; j < cellH; j++) {
-                for (int i = 0; i < cellW; i++) {
-                    int px = x * cellW + i;
-                    int py = y * cellH + j;
-                    if (px < img.getWidth() && py < img.getHeight()) {
-                        if (edgeImg.getPixels()[py * img.getWidth() + px] > 0) {
-                            count++;
-                        }
-                    }
-                }
+    // Accumulate by pixel
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            if (edgeImg.getPixels()[y * width + x] > 0) {
+                int gridCol = x * gridX / width;
+                int gridRow = y * gridY / height;
+                int index = gridRow * gridX + gridCol;
+                histogram[index]++;
             }
-            histogram[y * gridX + x] = count;
         }
     }
 
+    // Normalize
     float maxCount = *std::max_element(histogram.begin(), histogram.end());
     if (maxCount > 0) {
         for (auto& h : histogram) {
@@ -141,6 +137,7 @@ void FeatureHandler::computeEdgeMap(MediaElement& element) {
 
     element.edgeHist = histogram;
 }
+
 
 void FeatureHandler::computeDominantColor(MediaElement& element) {
     if (!element.image.isAllocated()) return;
