@@ -52,86 +52,139 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-    if (dir.size() < 1) return;
+    if (medias.empty()) return;
     if (fullscreenMode) {
         drawSelectedMediaFullscreen();
         return;
     }
+    bool groupingActive = groupByLuminance || groupByColor || groupByTexture;
 
-    int x_pos = margin - scrollOffsetX;
-    int y_pos = margin;
+    int rowHeight = standardImageSize.second + margin;
+    int baseY = (ofGetHeight() - (groupingActive ? 3 * rowHeight : rowHeight)) / 2;
 
-    // Auto-scroll to make selected media visible
-    int selectedX = margin;
-    int selectedCol = currentMedia; // Since now it's 1 row
-    selectedX += selectedCol * (standardImageSize.first + margin);
+    // Group media if needed
+    std::array<std::vector<MediaElement*>, 3> groupedMedias;
 
-    int viewWidth = ofGetWidth();
-
-    if (selectedX - scrollOffsetX < 0) {
-        scrollOffsetX = selectedX; // Scroll left
+    if (groupByLuminance) {
+        for (auto& media : medias) groupedMedias[media.luminanceGroup].push_back(&media);
     }
-    else if (selectedX - scrollOffsetX + standardImageSize.first > viewWidth) {
-        scrollOffsetX = selectedX - (viewWidth - standardImageSize.first - margin); // Scroll right
+    else if (groupByColor) {
+        for (auto& media : medias) groupedMedias[media.colorGroup].push_back(&media);
+    }
+    else if (groupByTexture) {
+        for (auto& media : medias) groupedMedias[media.textureGroup].push_back(&media);
+    }
+    else {
+        for (auto& media : medias) groupedMedias[0].push_back(&media);
     }
 
-    for (int i = 0; i < medias.size(); ++i) {
-        auto& media = medias[i];
+    for (int row = 0; row < 3; ++row) {
+        if (groupedMedias[row].empty()) continue;
 
-        int drawX = x_pos;
-        int drawY = y_pos;
+        int x_pos = margin - scrollOffsetX;
+        int y_pos = baseY + row * rowHeight;
 
-        // Skip drawing if the media is outside the visible window
-        if (drawX + standardImageSize.first < 0 || drawX > ofGetWidth()) {
-            x_pos += standardImageSize.first + margin;
-            continue;
+        // === Draw row label ===
+        std::string rowLabel;
+        if (groupByLuminance) {
+            rowLabel = getLuminanceGroupNames().at(static_cast<LuminanceGroup>(row));
         }
-
-        std::string luminanceString = getLuminanceGroupNames().at(media.luminanceGroup) +
-            " luminance (" + std::to_string(media.averageLuminance) + ")";
-        std::string colorString = getColorGroupNames().at(media.colorGroup) + " dominant color ";
-
-        // Draw image
-        if (&media == &medias[currentMedia]) {
-            media.drawImageWithContour(drawX, drawY);
+        else if (groupByColor) {
+            rowLabel = getColorGroupNames().at(static_cast<ColorGroup>(row));
         }
-        else if (showDominantColor) {
-            media.drawImageWithContour(drawX, drawY, media.dominantColor);
+        else if (groupByTexture) {
+            rowLabel = getTextureGroupNames().at(static_cast<TextureGroup>(row));
         }
         else {
-            media.drawImage(drawX, drawY);
+            rowLabel = "All";
         }
 
-        if (showDominantColor) {
-            ofDrawBitmapString(colorString, drawX + 5, drawY + media.image.getHeight() - 5);
+        ofSetColor(255);
+        ofDrawBitmapString(rowLabel + " group", 10, y_pos + standardImageSize.second / 2);
+
+        // === Auto-scroll based on selected media ===
+        int viewWidth = ofGetWidth();
+        int selectedRow = 0;
+        int selectedIndexInRow = 0;
+
+        // Find the row and index of currentMedia in grouped layout
+        for (int row = 0; row < 3; ++row) {
+            for (int i = 0; i < groupedMedias[row].size(); ++i) {
+                if (groupedMedias[row][i] == &medias[currentMedia]) {
+                    selectedRow = row;
+                    selectedIndexInRow = i;
+                    break;
+                }
+            }
         }
 
-        if (media.isVideo()) {
-            int iconX = drawX + media.image.getWidth() - iconSize - 5;
-            int iconY = drawY + 5;
-            ofSetColor(255);
-            videoIcon.draw(iconX, iconY, iconSize, iconSize);
+        // Compute its X position in the row
+        int selectedX = margin + selectedIndexInRow * (standardImageSize.first + margin);
+
+        // Adjust scrollOffsetX to make it visible
+        if (selectedX - scrollOffsetX < 0) {
+            scrollOffsetX = selectedX;
+        }
+        else if (selectedX - scrollOffsetX + standardImageSize.first > viewWidth) {
+            scrollOffsetX = selectedX - (viewWidth - standardImageSize.first - margin);
         }
 
-        if (showEdgeHist) {
-            media.drawEdgeMap(drawX, drawY, media.image.getWidth(), media.image.getHeight());
-        }
 
-        if (showLuminanceMap) {
-            media.drawLuminanceMap(drawX, drawY);
-            ofDrawBitmapString(luminanceString, drawX, drawY - 10);
-        }
+        // === Draw each media in the row ===
+        for (auto* media : groupedMedias[row]) {
+            int drawX = x_pos;
+            int drawY = y_pos;
 
-        if (showRGBHist) {
-            int histW = 150;
-            int histH = 400;
-            int histX = drawX + 5;
-            int histY = drawY + media.image.getHeight() - histH - 5;
-            ofSetColor(255);
-            media.drawNormalizedRGBHistogram(histX, histY + histH, histW, histH);
-        }
+            if (drawX + standardImageSize.first < 0 || drawX > ofGetWidth()) {
+                x_pos += standardImageSize.first + margin;
+                continue;
+            }
 
-        x_pos += media.image.getWidth() + margin;
+            std::string luminanceString = getLuminanceGroupNames().at(media->luminanceGroup) +
+                " luminance (" + std::to_string(media->averageLuminance) + ")";
+            std::string colorString = getColorGroupNames().at(media->colorGroup) + " dominant color ";
+
+            if (media == &medias[currentMedia]) {
+                media->drawImageWithContour(drawX, drawY);
+            }
+            else if (showDominantColor) {
+                media->drawImageWithContour(drawX, drawY, media->dominantColor);
+            }
+            else {
+                media->drawImage(drawX, drawY);
+            }
+
+            if (showDominantColor) {
+                ofDrawBitmapString(colorString, drawX + 5, drawY + media->image.getHeight() - 5);
+            }
+
+            if (media->isVideo()) {
+                int iconX = drawX + media->image.getWidth() - iconSize - 5;
+                int iconY = drawY + 5;
+                ofSetColor(255);
+                videoIcon.draw(iconX, iconY, iconSize, iconSize);
+            }
+
+            if (showEdgeHist) {
+                media->drawEdgeMap(drawX, drawY, media->image.getWidth(), media->image.getHeight());
+            }
+
+            if (showLuminanceMap) {
+                media->drawLuminanceMap(drawX, drawY);
+                ofDrawBitmapString(luminanceString, drawX, drawY - 10);
+            }
+
+            if (showRGBHist) {
+                int histW = 150;
+                int histH = 400;
+                int histX = drawX + 5;
+                int histY = drawY + media->image.getHeight() - histH - 5;
+                ofSetColor(255);
+                media->drawNormalizedRGBHistogram(histX, histY + histH, histW, histH);
+            }
+
+            x_pos += media->image.getWidth() + margin;
+        }
     }
 
     if (showLegend) {
@@ -154,7 +207,6 @@ void ofApp::drawSelectedMediaFullscreen() {
 
     // Set fullscreen mode
     ofSetFullscreen(true);
-    fullscreenMode = true;
     // Make sure we have media to show
     if (medias.empty()) return;
 
@@ -204,13 +256,16 @@ void ofApp::drawLegend() {
         "'c'           : Toggle dominant color contour",
         "'l'           : Toggle luminance map",
         "'r'           : Toggle RGB histogram",
+        "'1'           : Group by luminance",
+        "'2'           : Group by dominant color",
+        "'3'           : Group by texture level",
         "'h'           : Toggle this legend"
     };
 
     int lineHeight = 20;
     int padding = 10;
     int legendHeight = lineHeight * lines.size() + padding * 2;
-    int legendWidth = 400;
+    int legendWidth = 420;
     int x = 20;
     int y = ofGetHeight() - legendHeight - 20;  // 20 px above bottom of screen
 
@@ -257,17 +312,15 @@ void ofApp::keyPressed(int key) {
         break;
 
 
-    case('f'): //toggles full screen 
+    case('f'):
+        fullscreenMode = !fullscreenMode;
+        ofSetFullscreen(fullscreenMode);
+
         if (!fullscreenMode) {
-            drawSelectedMediaFullscreen();
-            fullscreenMode = true;
-        }
-        else {
-            fullscreenMode = false;
-            ofSetFullscreen(false);
             ofSetWindowShape(prevScreenSize.first, prevScreenSize.second);
         }
         break;
+
 
     case(' '): // Play/pause the video
         if (medias[currentMedia].isVideo()) {
@@ -316,15 +369,15 @@ void ofApp::keyPressed(int key) {
         break;
 
     case('1'): // group by luminance
-        luminanceGrouping = !luminanceGrouping; // Toggle grouping 
+        groupByLuminance = !groupByLuminance; // Toggle grouping 
         break;
 
     case('2'): // group by color
-        colorGrouping = !colorGrouping; // Toggle grouping
+        groupByColor = !groupByColor; // Toggle grouping
         break;
 
     case('3'): // group by textures
-        textureGrouping = !textureGrouping; // Toggle grouping
+        groupByTexture = !groupByTexture; // Toggle grouping
         break;
     }
 }

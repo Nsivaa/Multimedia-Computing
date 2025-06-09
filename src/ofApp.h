@@ -32,9 +32,9 @@ public:
 	bool showRGBHist = false;
 	bool showLegend = false;
 
-	bool luminanceGrouping = false; 
-	bool colorGrouping = false;
-	bool textureGrouping = false;
+	bool groupByLuminance = false; 
+	bool groupByColor = false;
+	bool groupByTexture = false;
 
 	std::pair<int, int> prevScreenSize = { 1024, 768 }; // to restore screen size when exiting fullscreen
 	std::pair<int, int> standardImageSize = { 300, 300 }; // standard image size for the application
