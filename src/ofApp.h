@@ -14,15 +14,21 @@ public:
 	void drawSelectedMediaFullscreen();
 	void drawLegend();
 	void keyPressed(int key);
-	
+	void updateMediaMatrix();
+
 	ofDirectory dir;
 	std::vector<MediaElement> medias;
+	std::vector<std::vector<MediaElement*>> mediaMatrix;
+
 	ofImage videoIcon;
 
 	int currentMedia = 0;
 	int margin = 20;            
 	int iconSize = 24;
 	int scrollOffsetX = 0;  
+	int selectedRow = 0;
+	int selectedCol = 0;
+
 
 	MediaElement* currentVideoPlaying = nullptr;
 	bool fullscreenMode = false;

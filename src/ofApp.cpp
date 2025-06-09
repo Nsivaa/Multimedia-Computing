@@ -48,6 +48,7 @@ void ofApp::update() {
         currentVideoPlaying->videoPlayer.nextFrame();
 		currentVideoPlaying->videoPlayer.update();
 	}
+    updateMediaMatrix();
 }
 
 //--------------------------------------------------------------
@@ -57,12 +58,11 @@ void ofApp::draw() {
         drawSelectedMediaFullscreen();
         return;
     }
+
     bool groupingActive = groupByLuminance || groupByColor || groupByTexture;
 
-    int rowHeight = standardImageSize.second + margin;
-    int baseY = (ofGetHeight() - (groupingActive ? 3 * rowHeight : rowHeight)) / 2;
-
-    // Group media if needed
+    // Build grouped matrix
+    mediaMatrix.clear();
     std::array<std::vector<MediaElement*>, 3> groupedMedias;
 
     if (groupByLuminance) {
@@ -79,72 +79,64 @@ void ofApp::draw() {
     }
 
     for (int row = 0; row < 3; ++row) {
-        if (groupedMedias[row].empty()) continue;
+        if (!groupedMedias[row].empty()) {
+            mediaMatrix.push_back(groupedMedias[row]);
+        }
+    }
 
+    int rowHeight = standardImageSize.second + margin;
+    int baseY = (ofGetHeight() - mediaMatrix.size() * rowHeight) / 2;
+
+    int viewWidth = ofGetWidth();
+
+    // Get currently selected media pointer
+    MediaElement* current = &medias[currentMedia];
+
+    // === Auto-scroll to selected media ===
+    for (int row = 0; row < mediaMatrix.size(); ++row) {
+        for (int col = 0; col < mediaMatrix[row].size(); ++col) {
+            if (mediaMatrix[row][col] == current) {
+                selectedRow = row;
+                selectedCol = col;
+                int selectedX = margin + col * (standardImageSize.first + margin);
+                if (selectedX - scrollOffsetX < 0) {
+                    scrollOffsetX = selectedX;
+                }
+                else if (selectedX - scrollOffsetX + standardImageSize.first > viewWidth) {
+                    scrollOffsetX = selectedX - (viewWidth - standardImageSize.first - margin);
+                }
+                break;
+            }
+        }
+    }
+
+    // === Draw all rows ===
+    for (int row = 0; row < mediaMatrix.size(); ++row) {
         int x_pos = margin - scrollOffsetX;
         int y_pos = baseY + row * rowHeight;
 
-        // === Draw row label ===
-        std::string rowLabel;
-        if (groupByLuminance) {
-            rowLabel = getLuminanceGroupNames().at(static_cast<LuminanceGroup>(row));
-        }
-        else if (groupByColor) {
-            rowLabel = getColorGroupNames().at(static_cast<ColorGroup>(row));
-        }
-        else if (groupByTexture) {
-            rowLabel = getTextureGroupNames().at(static_cast<TextureGroup>(row));
-        }
-        else {
-            rowLabel = "All";
-        }
+        // === Row label ===
+        std::string rowLabel = "";
+        if (groupByLuminance) rowLabel = getLuminanceGroupNames().at(static_cast<LuminanceGroup>(row));
+        else if (groupByColor) rowLabel = getColorGroupNames().at(static_cast<ColorGroup>(row));
+        else if (groupByTexture) rowLabel = getTextureGroupNames().at(static_cast<TextureGroup>(row));
+        else rowLabel = "All";
 
         ofSetColor(255);
         ofDrawBitmapString(rowLabel + " group", 10, y_pos + standardImageSize.second / 2);
 
-        // === Auto-scroll based on selected media ===
-        int viewWidth = ofGetWidth();
-        int selectedRow = 0;
-        int selectedIndexInRow = 0;
-
-        // Find the row and index of currentMedia in grouped layout
-        for (int row = 0; row < 3; ++row) {
-            for (int i = 0; i < groupedMedias[row].size(); ++i) {
-                if (groupedMedias[row][i] == &medias[currentMedia]) {
-                    selectedRow = row;
-                    selectedIndexInRow = i;
-                    break;
-                }
-            }
-        }
-
-        // Compute its X position in the row
-        int selectedX = margin + selectedIndexInRow * (standardImageSize.first + margin);
-
-        // Adjust scrollOffsetX to make it visible
-        if (selectedX - scrollOffsetX < 0) {
-            scrollOffsetX = selectedX;
-        }
-        else if (selectedX - scrollOffsetX + standardImageSize.first > viewWidth) {
-            scrollOffsetX = selectedX - (viewWidth - standardImageSize.first - margin);
-        }
-
-
-        // === Draw each media in the row ===
-        for (auto* media : groupedMedias[row]) {
-            int drawX = x_pos;
+        for (int col = 0; col < mediaMatrix[row].size(); ++col) {
+            MediaElement* media = mediaMatrix[row][col];
+            int drawX = margin + col * (standardImageSize.first + margin) - scrollOffsetX;
             int drawY = y_pos;
 
-            if (drawX + standardImageSize.first < 0 || drawX > ofGetWidth()) {
-                x_pos += standardImageSize.first + margin;
-                continue;
-            }
+            if (drawX + standardImageSize.first < 0 || drawX > ofGetWidth()) continue;
 
             std::string luminanceString = getLuminanceGroupNames().at(media->luminanceGroup) +
                 " luminance (" + std::to_string(media->averageLuminance) + ")";
             std::string colorString = getColorGroupNames().at(media->colorGroup) + " dominant color ";
 
-            if (media == &medias[currentMedia]) {
+            if (media == current) {
                 media->drawImageWithContour(drawX, drawY);
             }
             else if (showDominantColor) {
@@ -182,8 +174,6 @@ void ofApp::draw() {
                 ofSetColor(255);
                 media->drawNormalizedRGBHistogram(histX, histY + histH, histW, histH);
             }
-
-            x_pos += media->image.getWidth() + margin;
         }
     }
 
@@ -198,6 +188,7 @@ void ofApp::draw() {
         ofDrawBitmapString(hint, x, y);
     }
 }
+
 
 void ofApp::drawSelectedMediaFullscreen() {
 
@@ -246,6 +237,37 @@ void ofApp::drawSelectedMediaFullscreen() {
     selected.image.draw(x, y, drawW, drawH);
 }
 
+void ofApp::updateMediaMatrix() {
+    mediaMatrix.clear();
+    mediaMatrix.resize(3);
+
+    if (groupByLuminance) {
+        for (auto& m : medias) mediaMatrix[m.luminanceGroup].push_back(&m);
+    }
+    else if (groupByColor) {
+        for (auto& m : medias) mediaMatrix[m.colorGroup].push_back(&m);
+    }
+    else if (groupByTexture) {
+        for (auto& m : medias) mediaMatrix[m.textureGroup].push_back(&m);
+    }
+    else {
+        mediaMatrix[0] = {};
+        for (auto& m : medias) mediaMatrix[0].push_back(&m);
+    }
+
+    // Find new selection position
+    for (int row = 0; row < 3; ++row) {
+        for (int col = 0; col < mediaMatrix[row].size(); ++col) {
+            if (mediaMatrix[row][col] == &medias[currentMedia]) {
+                selectedRow = row;
+                selectedCol = col;
+                return;
+            }
+        }
+    }
+}
+
+
 void ofApp::drawLegend() {
     std::vector<std::string> lines = {
         "Legend (press 'h' to hide):",
@@ -287,29 +309,84 @@ void ofApp::drawLegend() {
 void ofApp::keyPressed(int key) {
     switch (key) {
 
-    case(OF_KEY_RIGHT):
+    case OF_KEY_RIGHT: {
+        // Move to the next media in the current row
+        if (selectedCol + 1 < mediaMatrix[selectedRow].size()) {
+            selectedCol++;
+        }
+        else {
+            selectedCol = 0;
+        }
+        MediaElement* selectedPtr = mediaMatrix[selectedRow][selectedCol];
+        currentMedia = std::distance(
+            medias.begin(),
+            std::find_if(medias.begin(), medias.end(),
+                [selectedPtr](MediaElement& m) { return &m == selectedPtr; })
+        );
 
-        currentMedia++;
-        if (currentMedia >= medias.size()) {
-            currentMedia = 0;
-        }
-        if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
-            currentVideoPlaying->videoPlayer.stop(); // Reset
-            currentVideoPlaying = nullptr;
-        }
         break;
+    }
 
-    case(OF_KEY_LEFT):
-        currentMedia--;
+    case OF_KEY_LEFT: {
+        // Move to the previous media in the current row
+        if (selectedCol > 0) {
+            selectedCol--;
+        }
+        else {
+            selectedCol = mediaMatrix[selectedRow].size() - 1;
+        }
+        MediaElement* selectedPtr = mediaMatrix[selectedRow][selectedCol];
+        currentMedia = std::distance(
+            medias.begin(),
+            std::find_if(medias.begin(), medias.end(),
+                [selectedPtr](MediaElement& m) { return &m == selectedPtr; })
+        );
 
-        if (currentMedia < 0) {
-            currentMedia = medias.size() - 1;
-        }
-        if (currentVideoPlaying && currentVideoPlaying != &medias[currentMedia]) {
-            currentVideoPlaying->videoPlayer.stop(); // Reset
-            currentVideoPlaying = nullptr;
-        }
         break;
+    }
+
+    case OF_KEY_UP: {
+        // Move to the previous row, wrapping around if necessary
+        int originalRow = selectedRow;
+        do {
+            selectedRow = (selectedRow - 1 + 3) % 3;
+        } while (mediaMatrix[selectedRow].empty() && selectedRow != originalRow);
+
+        if (selectedCol >= mediaMatrix[selectedRow].size()) {
+            selectedCol = mediaMatrix[selectedRow].size() - 1;
+        }
+
+        MediaElement* selectedPtr = mediaMatrix[selectedRow][selectedCol];
+        currentMedia = std::distance(
+            medias.begin(),
+            std::find_if(medias.begin(), medias.end(),
+                [selectedPtr](MediaElement& m) { return &m == selectedPtr; })
+        );
+
+        break;
+    }
+
+    case OF_KEY_DOWN: {
+        // Move to the next row, wrapping around if necessary
+        int originalRow = selectedRow;
+        do {
+            selectedRow = (selectedRow + 1) % 3;
+        } while (mediaMatrix[selectedRow].empty() && selectedRow != originalRow);
+
+        if (selectedCol >= mediaMatrix[selectedRow].size()) {
+            selectedCol = mediaMatrix[selectedRow].size() - 1;
+        }
+
+        MediaElement* selectedPtr = mediaMatrix[selectedRow][selectedCol];
+        currentMedia = std::distance(
+            medias.begin(),
+            std::find_if(medias.begin(), medias.end(),
+                [selectedPtr](MediaElement& m) { return &m == selectedPtr; })
+        );
+
+        break;
+    }
+
 
 
     case('f'):
@@ -349,35 +426,30 @@ void ofApp::keyPressed(int key) {
         break;
 
     case('e'): // show/hide edge histogram
-        showEdgeHist = !showEdgeHist;
-        break;
+        showEdgeHist = !showEdgeHist; break;
 
     case('c'): // show dominant color contour
-        showDominantColor = !showDominantColor;
-        break;
+        showDominantColor = !showDominantColor; break;
 
     case('l'): // show luminance map
-        showLuminanceMap = !showLuminanceMap;
-        break;
+        showLuminanceMap = !showLuminanceMap; break;
 
     case('r'): // show RGB histogram
-        showRGBHist = !showRGBHist;
-        break;
+        showRGBHist = !showRGBHist; break;
 
     case('h'): // show/hide legend
-        showLegend = !showLegend;
-        break;
+        showLegend = !showLegend; break;
 
-    case('1'): // group by luminance
-        groupByLuminance = !groupByLuminance; // Toggle grouping 
-        break;
+    case '1': groupByLuminance = !groupByLuminance;
+        groupByColor = groupByTexture = false;
+        updateMediaMatrix(); break;
 
-    case('2'): // group by color
-        groupByColor = !groupByColor; // Toggle grouping
-        break;
+    case '2': groupByColor = !groupByColor;
+        groupByLuminance = groupByTexture = false;
+        updateMediaMatrix(); break;
 
-    case('3'): // group by textures
-        groupByTexture = !groupByTexture; // Toggle grouping
-        break;
+    case '3': groupByTexture = !groupByTexture;
+        groupByLuminance = groupByColor = false;
+        updateMediaMatrix(); break;
     }
 }
