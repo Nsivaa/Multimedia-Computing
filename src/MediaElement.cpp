@@ -1,5 +1,4 @@
 #include "MediaElement.h"
-#include "ofxOpenCv.h"
 
 
 
@@ -119,4 +118,122 @@ void MediaElement::drawLuminanceMap(int x, int y) const {
 
     ofSetColor(255); // Reset to opaque white
     ofDisableAlphaBlending();
+}
+
+
+void MediaElement::saveToXML(ofxXmlSettings& xml, int index) const {
+    std::string tag = "media";
+    xml.addTag(tag);
+    xml.pushTag(tag, index);
+
+    xml.addValue("filePath", filePath);
+    xml.addValue("videoPath", videoPath);
+    xml.addValue("isVideoFlag", isVideoFlag);
+    xml.addValue("isPaused", isPaused);
+
+    xml.addValue("averageLuminance", averageLuminance);
+    xml.addValue("rhythmScore", rhythmMetric); // Updated from rhythmScore
+    xml.addValue("textureVariance", textureVariance);
+
+    xml.addValue("luminanceGroup", int(luminanceGroup));
+    xml.addValue("colorGroup", int(colorGroup));
+    xml.addValue("textureGroup", int(textureGroup));
+    xml.addValue("rhythmGroup", int(rhythmGroup));
+
+    xml.addValue("dominantColorR", dominantColor.r);
+    xml.addValue("dominantColorG", dominantColor.g);
+    xml.addValue("dominantColorB", dominantColor.b);
+
+    xml.addTag("redHist");
+    xml.pushTag("redHist");
+    for (int i = 0; i < redHist.size(); ++i) {
+        xml.addValue("bin", redHist[i]);
+    }
+    xml.popTag();
+
+    xml.addTag("greenHist");
+    xml.pushTag("greenHist");
+    for (int i = 0; i < greenHist.size(); ++i) {
+        xml.addValue("bin", greenHist[i]);
+    }
+    xml.popTag();
+
+    xml.addTag("blueHist");
+    xml.pushTag("blueHist");
+    for (int i = 0; i < blueHist.size(); ++i) {
+        xml.addValue("bin", blueHist[i]);
+    }
+    xml.popTag();
+
+    xml.addTag("edgeHist");
+    xml.pushTag("edgeHist");
+    for (int i = 0; i < edgeHist.size(); ++i) {
+        xml.addValue("bin", edgeHist[i]);
+    }
+    xml.popTag();
+
+    xml.popTag(); // media
+}
+
+void MediaElement::loadFromXML(ofxXmlSettings& xml, int index) {
+    std::string tag = "media";
+    if (!xml.tagExists(tag)) return;
+
+    xml.pushTag(tag, index);
+
+    filePath = xml.getValue("filePath", "");
+    videoPath = xml.getValue("videoPath", "");
+    isVideoFlag = xml.getValue("isVideoFlag", false);
+    isPaused = xml.getValue("isPaused", false);
+
+    averageLuminance = xml.getValue("averageLuminance", 0.0f);
+    rhythmMetric = xml.getValue("rhythmScore", 0.0f);
+    textureVariance = xml.getValue("textureVariance", 0.0f);
+
+    luminanceGroup = static_cast<LuminanceGroup>(xml.getValue("luminanceGroup", 0));
+    colorGroup = static_cast<ColorGroup>(xml.getValue("colorGroup", 0));
+    textureGroup = static_cast<TextureGroup>(xml.getValue("textureGroup", 0));
+    rhythmGroup = static_cast<RhythmGroup>(xml.getValue("rhythmGroup", 0));
+
+    dominantColor.r = xml.getValue("dominantColorR", 0);
+    dominantColor.g = xml.getValue("dominantColorG", 0);
+    dominantColor.b = xml.getValue("dominantColorB", 0);
+
+    redHist.clear();
+    if (xml.pushTag("redHist")) {
+        int numBins = xml.getNumTags("bin");
+        for (int i = 0; i < numBins; ++i) {
+            redHist.push_back(xml.getValue("bin", 0.0f, i));
+        }
+        xml.popTag();
+    }
+
+    greenHist.clear();
+    if (xml.pushTag("greenHist")) {
+        int numBins = xml.getNumTags("bin");
+        for (int i = 0; i < numBins; ++i) {
+            greenHist.push_back(xml.getValue("bin", 0.0f, i));
+        }
+        xml.popTag();
+    }
+
+    blueHist.clear();
+    if (xml.pushTag("blueHist")) {
+        int numBins = xml.getNumTags("bin");
+        for (int i = 0; i < numBins; ++i) {
+            blueHist.push_back(xml.getValue("bin", 0.0f, i));
+        }
+        xml.popTag();
+    }
+
+    edgeHist.clear();
+    if (xml.pushTag("edgeHist")) {
+        int numBins = xml.getNumTags("bin");
+        for (int i = 0; i < numBins; ++i) {
+            edgeHist.push_back(xml.getValue("bin", 0.0f, i));
+        }
+        xml.popTag();
+    }
+
+    xml.popTag(); // media
 }
