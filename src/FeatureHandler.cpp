@@ -44,9 +44,32 @@ void FeatureHandler::computeRhythmMetric(MediaElement& element) {
     ofImage prevFrame, currentFrame;
     float totalChange = 0.0;
     int numComparisons = 0;
-	ofVideoPlayer& video = element.videoPlayer; 
+    ofVideoPlayer& video = element.videoPlayer;
 
-    for (int i = 0; i < video.getTotalNumFrames() - frameStep; i += frameStep) {
+    if (!video.isLoaded()) {
+        video.load(element.videoPath);
+        // Wait for first frame to be ready
+        while (!video.isFrameNew()) {
+            video.update();
+        }
+    }
+    int totalFrames = video.getTotalNumFrames();
+
+    ofLog() << "computeRhythmMetric called, totalFrames: " << totalFrames;
+
+    if (!video.isLoaded()) {
+        ofLogWarning() << "Video is not loaded yet.";
+        element.rhythmMetric = 0.0f;
+        return;
+    }
+
+    if (totalFrames <= frameStep) {
+        ofLogWarning() << "Not enough frames to compute rhythm metric.";
+        element.rhythmMetric = 0.0f;
+        return;
+    }
+
+    for (int i = 0; i < totalFrames - frameStep; i += frameStep) {
         video.setFrame(i);
         video.update();
         prevFrame.setFromPixels(video.getPixels());
@@ -55,7 +78,6 @@ void FeatureHandler::computeRhythmMetric(MediaElement& element) {
         video.update();
         currentFrame.setFromPixels(video.getPixels());
 
-        // Resize both to smaller size (e.g., 64x64) to reduce noise
         prevFrame.resize(64, 64);
         currentFrame.resize(64, 64);
 
@@ -63,9 +85,13 @@ void FeatureHandler::computeRhythmMetric(MediaElement& element) {
         totalChange += diff;
         numComparisons++;
     }
-    float avgChange = totalChange / numComparisons;
-	element.rhythmMetric = avgChange;
+
+    float avgChange = (numComparisons > 0) ? totalChange / numComparisons : 0.0f;
+    element.rhythmMetric = avgChange;
+
+    ofLog() << "Rhythm metric computed: " << avgChange;
 }
+
 
 void FeatureHandler::computeNormalizedRGBHistogram(MediaElement& element) {
     ofPixels pixels = element.image.getPixels();
