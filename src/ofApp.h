@@ -1,6 +1,7 @@
 #include "ofMain.h"
 #include "MediaElement.h" 
 #include "FeatureHandler.h"
+#include "MotionDetection.h"
 #include "utils.h"
 
 
@@ -17,6 +18,7 @@ public:
 	void keyPressed(int key);
 	void updateMediaMatrix();
 
+	MotionDetection motionDetection;
 	ofDirectory dir;
 	std::vector<MediaElement> medias;
 	std::vector<std::vector<MediaElement*>> mediaMatrix;

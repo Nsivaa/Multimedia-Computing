@@ -1,7 +1,10 @@
 #include "ofApp.h"
+#include "MotionDetection.h"
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+    
+
     dir.listDir("images/of_logos/"); // Media directory
     dir.allowExt("jpg");
     dir.allowExt("mp4");
@@ -14,6 +17,9 @@ void ofApp::setup() {
     ofBackground(ofColor::black);
 
     FeatureHandler featureHandler; // Create a handler instance
+
+    motionDetection.SetupMotionDetection();
+
 	updateMediaMatrix(); // Initialize media matrix
 
     for (int i = 0; i < dir.size(); i++) {
@@ -38,12 +44,14 @@ void ofApp::setup() {
         featureHandler.computeAllFeatures(media);
 
         medias.push_back(media); // Store processed media
+
     }
 }
 
 
 //--------------------------------------------------------------
 void ofApp::update() {
+    motionDetection.UpdateMotionDetection(mediaMatrix,selectedRow,selectedCol,currentMedia, medias);
 	// if a video is playing, update it
     if (currentVideoPlaying && !currentVideoPlaying->isPaused) {
         currentVideoPlaying->videoPlayer.nextFrame();
@@ -54,6 +62,7 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
+    motionDetection.DrawDebugCameras();
     if (medias.empty()) return;
     if (fullscreenMode) {
         drawSelectedMediaFullscreen();
