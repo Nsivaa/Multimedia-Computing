@@ -105,6 +105,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MotionDetection.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="src\FeatureHandler.cpp" />
     <ClCompile Include="src\MediaElement.cpp" />
@@ -121,6 +122,7 @@
     <ClCompile Include="..\..\..\addons\ofxXmlSettings\libs\tinyxmlparser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\MotionDetection.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\FeatureHandler.h" />
     <ClInclude Include="src\MediaElement.h" />

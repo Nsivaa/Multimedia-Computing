@@ -26,9 +26,9 @@ public:
 	ofImage videoIcon;
 
 	int currentMedia = 0;
-	int margin = 20;            
+	int margin = 20;
 	int iconSize = 24;
-	int scrollOffsetX = 0;  
+	int scrollOffsetX = 0;
 	int selectedRow = 0;
 	int selectedCol = 0;
 
@@ -42,7 +42,7 @@ public:
 	bool showLegend = false;
 	bool showInfoWindow = false;
 
-	bool groupByLuminance = false; 
+	bool groupByLuminance = false;
 	bool groupByColor = false;
 	bool groupByTexture = false;
 

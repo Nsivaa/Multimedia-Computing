@@ -3,7 +3,6 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-    
 
     dir.listDir("images/of_logos/"); // Media directory
     dir.allowExt("jpg");
@@ -51,12 +50,14 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-    motionDetection.UpdateMotionDetection(mediaMatrix,selectedRow,selectedCol,currentMedia, medias);
-	// if a video is playing, update it
+
+    motionDetection.UpdateMotionDetection(mediaMatrix, selectedRow, selectedCol, currentMedia, medias);
+    // if a video is playing, update it
+
     if (currentVideoPlaying && !currentVideoPlaying->isPaused) {
         currentVideoPlaying->videoPlayer.nextFrame();
-		currentVideoPlaying->videoPlayer.update();
-	}
+        currentVideoPlaying->videoPlayer.update();
+    }
     updateMediaMatrix();
 }
 
@@ -233,7 +234,7 @@ void ofApp::draw() {
         ofSetColor(255);
         ofDrawBitmapString(hint, x, y);
     }
-	// Draw the currently selected media info box
+    // Draw the currently selected media info box
     if (showInfoWindow && current != nullptr) {
         drawMediaXMLInfo(*current, ofGetWidth(), ofGetHeight());
     }
@@ -244,9 +245,9 @@ void ofApp::draw() {
 
 void ofApp::drawSelectedMediaFullscreen() {
 
-	// save the current screen size
-	prevScreenSize.first = ofGetWidth();
-	prevScreenSize.second = ofGetHeight();
+    // save the current screen size
+    prevScreenSize.first = ofGetWidth();
+    prevScreenSize.second = ofGetHeight();
 
     // Set fullscreen mode
     ofSetFullscreen(true);
@@ -333,7 +334,7 @@ void ofApp::drawLegend() {
         "'1'           : Group by luminance",
         "'2'           : Group by dominant color",
         "'3'           : Group by texture level",
-		"'i'           : Toggle media metadata (XML) info window",
+        "'i'           : Toggle media metadata (XML) info window",
         "'h'           : Toggle this legend"
     };
 
@@ -414,7 +415,7 @@ void ofApp::drawMediaXMLInfo(const MediaElement& media, int screenW, int screenH
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
     switch (key) {
-    
+
     case OF_KEY_RIGHT: {
         // Move to the next media in the current row
         if (selectedCol + 1 < mediaMatrix[selectedRow].size()) {
