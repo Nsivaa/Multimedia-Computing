@@ -4,7 +4,6 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-
     dir.listDir("images/of_logos/"); // Media directory
     dir.allowExt("jpg");
     dir.allowExt("mp4");
@@ -20,7 +19,7 @@ void ofApp::setup() {
 
     motionDetection.SetupMotionDetection();
 
-    updateMediaMatrix(); // Initialize media matrix
+	updateMediaMatrix(); // Initialize media matrix
 
     for (int i = 0; i < dir.size(); i++) {
         string filePath = dir.getPath(i);
@@ -51,8 +50,10 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
+
     motionDetection.UpdateMotionDetection(mediaMatrix, selectedRow, selectedCol, currentMedia, medias);
     // if a video is playing, update it
+
     if (currentVideoPlaying && !currentVideoPlaying->isPaused) {
         currentVideoPlaying->videoPlayer.nextFrame();
         currentVideoPlaying->videoPlayer.update();

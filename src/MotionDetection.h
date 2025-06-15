@@ -8,7 +8,6 @@ class MotionDetection {
 
 public:
 	MotionDetection() {};
-
 	void SetupMotionDetection();
 	void UpdateMotionDetection(
 		std::vector<std::vector<MediaElement*>>& mediaMatrix,
